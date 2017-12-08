@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+sudo docker run -it -v /home/dmabelin/projects/tensorflow/:/notebooks tensorflow/tensorflow python $1
