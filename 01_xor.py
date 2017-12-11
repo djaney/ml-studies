@@ -6,6 +6,10 @@ import time
 x_ = tf.placeholder(tf.float32, shape=[4,2], name = 'x-input')
 y_ = tf.placeholder(tf.float32, shape=[4,1], name = 'y-input')
 
+
+def create_layer(name, shape):
+	tf.Variable(tf.random_uniform(shape, -1, 1), name = name)
+
 Theta1 = tf.Variable(tf.random_uniform([2,2], -1, 1), name = "Theta1")
 Theta2 = tf.Variable(tf.random_uniform([2,1], -1, 1), name = "Theta2")
 
@@ -27,6 +31,10 @@ with tf.name_scope("train") as scope:
 
 XOR_X = [[0,0],[0,1],[1,0],[1,1]]
 XOR_Y = [[0],[1],[1],[0]]
+
+layer1 = create_layer('layer1',[2,2])
+layer1 = create_layer('layer1',[2,1])
+
 
 init = tf.initialize_all_variables()
 sess = tf.Session()
