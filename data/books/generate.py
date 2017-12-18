@@ -2,9 +2,12 @@
 import csv
 import urllib2
 import re
+import struct
+import pickle
+
 all_words = []
 data = {'x': [], 'y': []}
-
+print('initialize words')
 with open('words.csv', 'r') as file:
 	all_words = [l.strip() for l in file]
 with open('books.csv', 'r') as csvfile:
@@ -13,7 +16,7 @@ with open('books.csv', 'r') as csvfile:
 		dictionary = {}
 		filename = line[0]
 		label = line[1]
-		book_words = []
+		print('generate data from '+filename)
 		response = urllib2.urlopen(filename)
 		book_string = response.read()
 
@@ -31,15 +34,17 @@ with open('books.csv', 'r') as csvfile:
 			    		dictionary[word] = dictionary[word] + 1
 			    	else:
 			    		dictionary[word] = 1
-					
-					if word not in book_words:
-						book_words.append(word)
 
+		final = []
 		for w in all_words:
-			if w not in book_words:
-				dictionary[w] = 0
+			if w in dictionary:
+				final.append(dictionary[w])
+			else:
+				final.append(0)
 
-		data['x'].append(dictionary)
+		data['x'].append(final)
 		data['y'].append(label)
 
-print(data['x'][0])
+print('storing to binary file')
+with open('data.pkl', 'wb') as f:
+    pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
