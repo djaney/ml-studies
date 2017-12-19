@@ -5,6 +5,9 @@ Use MNIST database
 1 layer with 10 neurons in softmax yeilds 19%
 2 layer with 10 neurons each in softmax yeilds 9%
 2 layer with 10 neurons each in relu and softmax yeilds 53%
+5 layer with 10 neurons each in relu and softmax, 0.003 to 0.1 learning yeilds 85%
+with decay 73%
+with dropout 93%
 
 '''
 
@@ -19,12 +22,21 @@ parser.add_argument('--data_dir', type=str, default='/tmp/tensorflow/mnist/input
 FLAGS, unparsed = parser.parse_known_args()
 mnist = input_data.read_data_sets(FLAGS.data_dir)
 
+global_step = tf.Variable(0, trainable=False)
+starter_learning_rate = 0.1
+learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 100000, 0.75, staircase=True)
 
+
+is_train = tf.placeholder(tf.float32)
 
 # input - None is for batch, 3 is for number of input per batch
 x = tf.placeholder(tf.float32, [None,784])
 h1 = tf.layers.dense(x, 10, tf.nn.relu)
-m = tf.layers.dense(h1, 10, tf.nn.softmax)
+h2 = tf.layers.dense(h1, 10, tf.nn.relu)
+h3 = tf.layers.dense(h2, 10, tf.nn.relu)
+h4 = tf.layers.dense(h3, 10, tf.nn.relu)
+h5 = tf.layers.dropout(h3, 10, tf.nn.relu, is_train)
+m = tf.layers.dense(h5, 10, tf.nn.softmax)
 
 # initialize the variables defined above
 init = tf.global_variables_initializer()
@@ -38,7 +50,7 @@ y = tf.placeholder(tf.int64, [None])
 cross_entropy = tf.losses.sparse_softmax_cross_entropy(labels=y, logits=m)
 
 
-optimizer = tf.train.GradientDescentOptimizer(0.003)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate)
 train_step = optimizer.minimize(cross_entropy)
 
 sess = tf.Session()
@@ -46,10 +58,16 @@ sess.run(init)
 
 for i in range(10000):
 	batch_xs, batch_ys = mnist.train.next_batch(100)
-	train_data = {x: batch_xs, y: batch_ys}
-
+	train_data = {x: batch_xs, y: batch_ys, is_train: True}
+	#training
 	sess.run(train_step, feed_dict=train_data)
 	if 0 == i % 100:
 		correct_prediction = tf.equal(tf.argmax(m, 1), y)
 		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-		print(sess.run([accuracy, cross_entropy], feed_dict={x: mnist.test.images,y: mnist.test.labels}))
+
+		# train
+		a,c = sess.run([accuracy, cross_entropy], feed_dict={x: batch_xs, y: batch_ys, is_train: False})
+		print(a,c)
+		# test
+		a,c = sess.run([accuracy, cross_entropy], feed_dict={x: mnist.test.images,y: mnist.test.labels, is_train: False})
+		
