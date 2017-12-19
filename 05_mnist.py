@@ -6,36 +6,31 @@ Use MNIST database
 # Imports
 import numpy as np
 import tensorflow as tf
+import argparse
+from tensorflow.examples.tutorials.mnist import input_data
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_dir', type=str, default='/tmp/tensorflow/mnist/input_data', help='Directory for storing input data')
+FLAGS, unparsed = parser.parse_known_args()
+mnist = input_data.read_data_sets(FLAGS.data_dir)
 
-# just 2 test datas
-data = np.array([
-    [1.0, 1.0, 1.0],
-    [0.0, 0.0, 0.0]
-])
-
-# labels or the correct answers of the test datas
-labels = np.array([[0.0,1.0],[1.0,0.0]])
 
 
 # input - None is for batch, 3 is for number of input per batch
-x = tf.placeholder(tf.float32, [None,3])
-m = tf.layers.dense(x, 2, tf.nn.softmax)
+x = tf.placeholder(tf.float32, [None,784])
+m = tf.layers.dense(x, 10, tf.nn.softmax)
 
 # initialize the variables defined above
-init = tf.initialize_all_variables()
+init = tf.global_variables_initializer()
 
 
 
 # labes or correct answers
-y = tf.placeholder(tf.float32, [None, 2])
+y = tf.placeholder(tf.int64, [None])
 
 # calculate the loss distance using cross entropy
-cross_entropy = -tf.reduce_sum(y * tf.log(m))
+cross_entropy = tf.losses.sparse_softmax_cross_entropy(labels=y, logits=m)
 
-# check if highest probability is the same as correct answers
-is_correct = tf.equal(tf.argmax(m,1), tf.argmax(y, 1))
-accuracy = tf.reduce_mean(tf.cast(is_correct, tf.float32))
 
 optimizer = tf.train.GradientDescentOptimizer(0.003)
 train_step = optimizer.minimize(cross_entropy)
@@ -44,13 +39,11 @@ sess = tf.Session()
 sess.run(init)
 
 for i in range(1000):
-	train_data = {x: data, y: labels}
-	a,c = sess.run([accuracy, cross_entropy], feed_dict=train_data)
+	batch_xs, batch_ys = mnist.train.next_batch(100)
+	train_data = {x: batch_xs, y: batch_ys}
+
 	sess.run(train_step, feed_dict=train_data)
-
-	if (0 == i % 100):
-		a,c = sess.run([accuracy, cross_entropy], feed_dict=train_data)
-		print(a,c)
-
-r = sess.run(m, feed_dict=train_data)
-print(r)
+	if 0 == i % 100:
+		correct_prediction = tf.equal(tf.argmax(m, 1), y)
+		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+		print(sess.run(accuracy, feed_dict={x: mnist.test.images,y: mnist.test.labels}))
