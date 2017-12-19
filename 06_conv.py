@@ -24,8 +24,8 @@ learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 1
 
 # input - None is for batch, 3 is for number of input per batch
 x = tf.placeholder(tf.float32, [None,784])
-x = tf.reshape(x, [28,28])
-c1 = tf.layers.conv2d(x,4, 5, activation=tf.nn.relu) # 4 channel output, 5x5 filter
+x_reshaped = tf.reshape(x, [-1,28,28 ,1])
+c1 = tf.layers.conv2d(x_reshaped,4, 5, activation=tf.nn.relu) # 4 channel output, 5x5 filter
 c1 = tf.layers.max_pooling2d(c1, 1, 1) # 1x1 with 1 stride
 
 c2 = tf.layers.conv2d(c1,8, 4, activation=tf.nn.relu)
@@ -34,7 +34,8 @@ c2 = tf.layers.max_pooling2d(c2, 2, 2)
 c3 = tf.layers.conv2d(c2,12, 4, activation=tf.nn.relu)
 c3 = tf.layers.max_pooling2d(c3, 2, 2)
 
-h1 = tf.layers.dense(tf.reshape(c3, [-1, 7*7*12]), 200, tf.nn.relu)
+f = tf.layers.flatten(c3)
+h1 = tf.layers.dense(f, 200, tf.nn.relu)
 m_ = tf.layers.dense(h1, 10, tf.nn.softmax) # for testing
 m = tf.layers.dropout(m_, rate=0.25) # for training
 
