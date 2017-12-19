@@ -1,6 +1,11 @@
 
 '''
 Use MNIST database
+
+1 layer with 10 neurons in softmax yeilds 19%
+2 layer with 10 neurons each in softmax yeilds 9%
+2 layer with 10 neurons each in relu and softmax yeilds 53%
+
 '''
 
 # Imports
@@ -18,7 +23,8 @@ mnist = input_data.read_data_sets(FLAGS.data_dir)
 
 # input - None is for batch, 3 is for number of input per batch
 x = tf.placeholder(tf.float32, [None,784])
-m = tf.layers.dense(x, 10, tf.nn.softmax)
+h1 = tf.layers.dense(x, 10, tf.nn.relu)
+m = tf.layers.dense(h1, 10, tf.nn.softmax)
 
 # initialize the variables defined above
 init = tf.global_variables_initializer()
@@ -38,7 +44,7 @@ train_step = optimizer.minimize(cross_entropy)
 sess = tf.Session()
 sess.run(init)
 
-for i in range(1000):
+for i in range(10000):
 	batch_xs, batch_ys = mnist.train.next_batch(100)
 	train_data = {x: batch_xs, y: batch_ys}
 
@@ -46,4 +52,4 @@ for i in range(1000):
 	if 0 == i % 100:
 		correct_prediction = tf.equal(tf.argmax(m, 1), y)
 		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-		print(sess.run(accuracy, feed_dict={x: mnist.test.images,y: mnist.test.labels}))
+		print(sess.run([accuracy, cross_entropy], feed_dict={x: mnist.test.images,y: mnist.test.labels}))
