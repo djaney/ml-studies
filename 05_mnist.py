@@ -32,8 +32,8 @@ h1 = tf.layers.dense(x, 10, tf.nn.relu)
 h2 = tf.layers.dense(h1, 10, tf.nn.relu)
 h3 = tf.layers.dense(h2, 10, tf.nn.relu)
 h4 = tf.layers.dense(h3, 10, tf.nn.relu)
-m = tf.layers.dense(h4, 10, tf.nn.softmax)
-m_ = tf.layers.dropout(m, rate=0.25)
+m_ = tf.layers.dense(h4, 10, tf.nn.softmax) # for testing
+m = tf.layers.dropout(m_, rate=0.25) # for training
 
 
 # initialize the variables defined above
