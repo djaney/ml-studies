@@ -8,7 +8,7 @@ Use MNIST database
 5 layer with 10 neurons each in relu and softmax, 0.003 to 0.1 learning yeilds 85%
 with decay 73%
 with dropout 93%
-
+some droppings
 '''
 
 # Imports
@@ -24,10 +24,7 @@ mnist = input_data.read_data_sets(FLAGS.data_dir)
 
 global_step = tf.Variable(0, trainable=False)
 starter_learning_rate = 0.1
-learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 100000, 0.75, staircase=True)
-
-
-is_train = tf.placeholder(tf.float32)
+learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 100000, 0.95, staircase=True)
 
 # input - None is for batch, 3 is for number of input per batch
 x = tf.placeholder(tf.float32, [None,784])
@@ -35,8 +32,9 @@ h1 = tf.layers.dense(x, 10, tf.nn.relu)
 h2 = tf.layers.dense(h1, 10, tf.nn.relu)
 h3 = tf.layers.dense(h2, 10, tf.nn.relu)
 h4 = tf.layers.dense(h3, 10, tf.nn.relu)
-# h5 = tf.layers.dropout(h3, 10, tf.nn.relu, is_train)
 m = tf.layers.dense(h4, 10, tf.nn.softmax)
+m_ = tf.layers.dropout(m, rate=0.25)
+
 
 # initialize the variables defined above
 init = tf.global_variables_initializer()
@@ -48,7 +46,7 @@ y = tf.placeholder(tf.int64, [None])
 
 # calculate the loss distance using cross entropy
 cross_entropy = tf.losses.sparse_softmax_cross_entropy(labels=y, logits=m)
-
+cross_entropy_ = tf.losses.sparse_softmax_cross_entropy(labels=y, logits=m_)
 
 optimizer = tf.train.GradientDescentOptimizer(learning_rate)
 train_step = optimizer.minimize(cross_entropy)
@@ -58,16 +56,15 @@ sess.run(init)
 
 for i in range(10000):
 	batch_xs, batch_ys = mnist.train.next_batch(100)
-	train_data = {x: batch_xs, y: batch_ys, is_train: True}
+	train_data = {x: batch_xs, y: batch_ys}
 	#training
 	sess.run(train_step, feed_dict=train_data)
 	if 0 == i % 100:
-		correct_prediction = tf.equal(tf.argmax(m, 1), y)
+		correct_prediction = tf.equal(tf.argmax(m_, 1), y)
 		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 		# train
-		a,c = sess.run([accuracy, cross_entropy], feed_dict={x: batch_xs, y: batch_ys, is_train: False})
-		print(a,c)
+		a,c = sess.run([accuracy, cross_entropy_], feed_dict={x: batch_xs, y: batch_ys})
 		# test
-		a,c = sess.run([accuracy, cross_entropy], feed_dict={x: mnist.test.images,y: mnist.test.labels, is_train: False})
-		
+		a_,c_ = sess.run([accuracy, cross_entropy_], feed_dict={x: mnist.test.images,y: mnist.test.labels})
+		print(a,c,a_,c_)
