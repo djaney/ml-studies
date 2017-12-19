@@ -35,8 +35,8 @@ h1 = tf.layers.dense(x, 10, tf.nn.relu)
 h2 = tf.layers.dense(h1, 10, tf.nn.relu)
 h3 = tf.layers.dense(h2, 10, tf.nn.relu)
 h4 = tf.layers.dense(h3, 10, tf.nn.relu)
-h5 = tf.layers.dropout(h3, 10, tf.nn.relu, is_train)
-m = tf.layers.dense(h5, 10, tf.nn.softmax)
+# h5 = tf.layers.dropout(h3, 10, tf.nn.relu, is_train)
+m = tf.layers.dense(h4, 10, tf.nn.softmax)
 
 # initialize the variables defined above
 init = tf.global_variables_initializer()
