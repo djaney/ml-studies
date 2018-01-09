@@ -1,18 +1,3 @@
-# encoding: UTF-8
-# Copyright 2017 Google.com
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import tensorflow as tf
 from tensorflow.contrib import layers
 from tensorflow.contrib import rnn  # rnn stuff temporarily in contrib, moving back to code in TF 1.1
@@ -20,43 +5,68 @@ import os
 import time
 import math
 import numpy as np
-import txt_utils as txt
-tf.set_random_seed(0)
+import glob
 
-# model parameters
-#
-# Usage:
-#   Training only:
-#         Leave all the parameters as they are
-#         Disable validation to run a bit faster (set validation=False below)
-#         You can follow progress in Tensorboard: tensorboard --log-dir=log
-#   Training and experimentation (default):
-#         Keep validation enabled
-#         You can now play with the parameters anf follow the effects in Tensorboard
-#         A good choice of parameters ensures that the testing and validation curves stay close
-#         To see the curves drift apart ("overfitting") try to use an insufficient amount of
-#         training data (shakedir = "shakespeare/t*.txt" for example)
-#
-SEQLEN = 30
-BATCHSIZE = 200
-ALPHASIZE = txt.ALPHASIZE
+CHARMAP = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
+
+SEQLEN = 5
+BATCHSIZE = 1
+ALPHASIZE = len(CHARMAP)
 INTERNALSIZE = 512
 NLAYERS = 3
 learning_rate = 0.001  # fixed learning rate
 dropout_pkeep = 0.8    # some dropout
+FILES = "shakespeare/*.txt"
 
-# load data, either shakespeare, or the Python source of Tensorflow itself
-shakedir = "shakespeare/*.txt"
-#shakedir = "../tensorflow/**/*.py"
-codetext, valitext, bookranges = txt.read_data_files(shakedir, validation=True)
 
-# display some stats on the data
-epoch_size = len(codetext) // (BATCHSIZE * SEQLEN)
-txt.print_data_stats(len(codetext), len(valitext), epoch_size)
+## Data related stuff
+        
+def char_to_value(char):
+    idx = CHARMAP.find(char)
+    if idx >= 0:
+        return idx
+    else:
+        return 0
+    
+def value_to_char(value):
+    return CHARMAP[value]
 
-#
-# the model (see FAQ in README.md)
-#
+# iterate every single file
+def get_file_data(pattern, index):
+    paths = glob.glob(pattern)
+    length = len(paths)
+    
+    if index < length:
+        data = []
+        with open(paths[index], "r") as file:
+            for line in file:
+                line_values = [char_to_value(l) for l in line]
+                data = data + list(line_values)
+        return data
+    else:
+        return None
+
+# get batch data in file
+def build_line_data(file_data, seqlen, batch_index, batch_count):
+    length = len(file_data)
+    start = batch_index * batch_count
+    end = start+seqlen
+    x = []
+    y = []
+    while end+1 <= length and len(x) < batch_count:
+        x_line = file_data[start:end]
+        y_line = file_data[start+1:end+1]
+        x.append(x_line)
+        y.append(y_line)
+        start = start + 1
+        end = start + seqlen
+    return x,y
+
+
+## Main program
+
+
+## create model
 lr = tf.placeholder(tf.float32, name='lr')  # learning rate
 pkeep = tf.placeholder(tf.float32, name='pkeep')  # dropout parameter
 batchsize = tf.placeholder(tf.int32, name='batchsize')
@@ -81,9 +91,7 @@ multicell = rnn.MultiRNNCell(dropcells, state_is_tuple=False)
 multicell = rnn.DropoutWrapper(multicell, output_keep_prob=pkeep)  # dropout for the softmax layer
 
 Yr, H = tf.nn.dynamic_rnn(multicell, Xo, dtype=tf.float32, initial_state=Hin)
-
 H = tf.identity(H, name='H')  # just to give it a name
-
 
 Yflat = tf.reshape(Yr, [-1, INTERNALSIZE])    # [ BATCHSIZE x SEQLEN, INTERNALSIZE ]
 Ylogits = layers.linear(Yflat, ALPHASIZE)     # [ BATCHSIZE x SEQLEN, ALPHASIZE ]
@@ -95,31 +103,12 @@ Y = tf.argmax(Yo, 1)                          # [ BATCHSIZE x SEQLEN ]
 Y = tf.reshape(Y, [batchsize, -1], name="Y")  # [ BATCHSIZE, SEQLEN ]
 train_step = tf.train.AdamOptimizer(lr).minimize(loss)
 
-# stats for display
-seqloss = tf.reduce_mean(loss, 1)
-batchloss = tf.reduce_mean(seqloss)
-accuracy = tf.reduce_mean(tf.cast(tf.equal(Y_, tf.cast(Y, tf.uint8)), tf.float32))
-loss_summary = tf.summary.scalar("batch_loss", batchloss)
-acc_summary = tf.summary.scalar("batch_accuracy", accuracy)
-summaries = tf.summary.merge([loss_summary, acc_summary])
-
-# Init Tensorboard stuff. This will save Tensorboard information into a different
-# folder at each run named 'log/<timestamp>/'. Two sets of data are saved so that
-# you can compare training and validation curves visually in Tensorboard.
-timestamp = str(math.trunc(time.time()))
-summary_writer = tf.summary.FileWriter("log/" + timestamp + "-training")
-validation_writer = tf.summary.FileWriter("log/" + timestamp + "-validation")
 
 # Init for saving models. They will be saved into a directory named 'checkpoints'.
 # Only the last checkpoint is kept.
 if not os.path.exists("checkpoints"):
     os.mkdir("checkpoints")
 saver = tf.train.Saver(max_to_keep=1000)
-
-# for display: init the progress bar
-DISPLAY_FREQ = 50
-_50_BATCHES = DISPLAY_FREQ * BATCHSIZE * SEQLEN
-progress = txt.Progress(DISPLAY_FREQ, size=111+2, msg="Training on next "+str(DISPLAY_FREQ)+" batches")
 
 # init
 istate = np.zeros([BATCHSIZE, INTERNALSIZE*NLAYERS])  # initial zero input state
@@ -128,4 +117,23 @@ sess = tf.Session()
 sess.run(init)
 step = 0
 
-## Train here
+for i in range(1):
+    file_data = get_file_data(FILES, i)
+    idx = 0
+    while True:
+        batch = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
+        
+        
+        # log
+#         if 0 == step % 50:
+#             print(ostate)
+        
+        step = step + 1
+        idx = idx + 1
+        if None == batch:
+            break
+        if idx > 10:
+            break
+        
+
+    
