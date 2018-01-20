@@ -134,6 +134,3 @@ for i in range(1):
             break
         if idx > 10:
             break
-        
-
-    
