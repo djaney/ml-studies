@@ -75,7 +75,8 @@ generationSize = 10
 iterations = 100
 
 # learn
-for gen in range(1000):
+gen = 0
+while True:
     for strainIndex in range(agent.generationSize()):
         ob = env.reset()
         for t in range(1000):
@@ -85,5 +86,6 @@ for gen in range(1000):
                 agent.next( reward, action[1])
                 break
     agent.evolve()
-    if 0 == gen % 100:
+    if 0 == gen % 1000:
         print(gen, reward)
+    gen=gen+1
