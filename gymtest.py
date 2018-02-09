@@ -58,7 +58,6 @@ class Agent(object):
                     mIdx = random.randrange(0, len(newStrain))
                     newStrain[mIdx] = random.uniform(-1, 1)+0.000001
 
-
             newStrain = numpy.reshape(newStrain, (4,2))
             self.strains.append([newStrain])
 
