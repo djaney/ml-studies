@@ -7,7 +7,7 @@ from keras.models import Model
 from keras.layers import Input, Dense
 class Agent(object):
     """The world's simplest agent!"""
-    def __init__(self, strain_count = 10, mutation_chance=0.01):
+    def __init__(self, strain_count = 10, mutation_chance=0.001):
         self.strains = []
         self.nextGen = []
         self.strain_count = strain_count
@@ -68,7 +68,6 @@ class Agent(object):
 env = gym.make('CartPole-v0')
 agent = Agent()
 
-reward = 0
 done = False
 generationSize = 10
 iterations = 100
@@ -78,13 +77,15 @@ gen = 0
 while True:
     for strainIndex in range(agent.generationSize()):
         ob = env.reset()
-        for t in range(1000):
+        reward_sum = 0
+        for t in range(200):
             action = agent.act(ob, strainIndex)
             ob, reward, done, info = env.step(action[0])
+            reward_sum=reward_sum+reward
             if done:
-                agent.next( reward, action[1])
+                agent.next( reward_sum, action[1])
                 break
     agent.evolve()
-    if 0 == gen % 1000:
-        print(gen, reward)
     gen=gen+1
+
+    print(gen, reward_sum)
