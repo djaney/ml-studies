@@ -3,3 +3,6 @@ __pycache__/
 .idea
 .pkl
 .ipynb_checkpoints
+/bin
+/include
+/lib
