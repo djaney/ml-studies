@@ -13,6 +13,7 @@ class Agent(object):
         self.strain_count = strain_count
         self.model = self.createModel()
         self.mutation_chance = mutation_chance
+        self.best = 0
 
         for _ in range(self.strain_count):
             self.strains.append(self.createModel().get_weights())
@@ -34,16 +35,24 @@ class Agent(object):
         b = Dense(2)(a)
         return Model(inputs=a, outputs=b)
 
+    def getBestReward(self):
+        return self.best
+
     def evolve(self):
 
         # find fittest
-        sorted(self.nextGen, key=lambda item: item[0], reverse=True)
+        self.nextGen = sorted(self.nextGen, key=lambda item: item[0], reverse=True)
         # breed
-        father = self.nextGen.pop(0)[1]
-        mother = self.nextGen.pop(0)[1]
+        father = self.nextGen[0][1]
+        mother = self.nextGen[1][1]
+
+        self.best = self.nextGen[0][0]
 
         self.strains = []
         self.nextGen = []
+
+        # add the best strain back into the pool
+        self.strains.append([numpy.reshape(father, (4,2))])
 
         for _ in range(self.strain_count):
             newStrain = []
@@ -88,4 +97,14 @@ while True:
     agent.evolve()
     gen=gen+1
 
-    print(gen, reward_sum)
+    print(gen, agent.getBestReward())
+
+    if 195 <= agent.getBestReward():
+        break
+
+# View
+ob = env.reset()
+while True:
+    env.render()
+    action = agent.act(ob, 0)
+    ob, reward, done, info = env.step(action[0])
