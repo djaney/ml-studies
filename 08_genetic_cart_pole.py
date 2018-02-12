@@ -87,7 +87,7 @@ while True:
     for strainIndex in range(agent.generationSize()):
         ob = env.reset()
         reward_sum = 0
-        for t in range(200):
+        while True:
             action = agent.act(ob, strainIndex)
             ob, reward, done, info = env.step(action[0])
             reward_sum=reward_sum+reward
@@ -99,7 +99,7 @@ while True:
 
     print(gen, agent.getBestReward())
 
-    if 195 <= agent.getBestReward():
+    if 200 <= agent.getBestReward():
         break
 
 # View
@@ -108,3 +108,5 @@ while True:
     env.render()
     action = agent.act(ob, 0)
     ob, reward, done, info = env.step(action[0])
+    if done:
+        break
