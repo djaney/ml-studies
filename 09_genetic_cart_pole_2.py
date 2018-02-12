@@ -75,14 +75,14 @@ class Agent(object):
 
     
 env = gym.make('CartPole-v1')
-agent = Agent()
+agent = Agent(strain_count=100)
 
 done = False
 generationSize = 10
 iterations = 100
 
 # learn
-gen = 0
+total_episodes = 0
 while True:
     for strainIndex in range(agent.generationSize()):
         ob = env.reset()
@@ -93,11 +93,11 @@ while True:
             reward_sum=reward_sum+reward
             if done:
                 agent.next( reward_sum, action[1])
+                total_episodes=total_episodes+1
                 break
     agent.evolve()
-    gen=gen+1
 
-    print(gen, agent.getBestReward())
+    print(total_episodes, agent.getBestReward())
 
     if 475 <= agent.getBestReward():
         break
