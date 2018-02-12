@@ -14,7 +14,7 @@ class Agent(object):
         self.model = self.createModel()
         self.mutation_chance = mutation_chance
         self.best = 0
-
+        self.shape = self.model.get_weights()[0].shape
         for _ in range(self.strain_count):
             self.strains.append(self.createModel().get_weights())
 
@@ -52,7 +52,7 @@ class Agent(object):
         self.nextGen = []
 
         # add the best strain back into the pool
-        self.strains.append([numpy.reshape(father, (4,2))])
+        self.strains.append([numpy.reshape(father, self.shape)])
 
         for _ in range(self.strain_count):
             newStrain = []
@@ -67,7 +67,7 @@ class Agent(object):
                     mIdx = random.randrange(0, len(newStrain))
                     newStrain[mIdx] = random.uniform(-1, 1)+0.000001
 
-            newStrain = numpy.reshape(newStrain, (4,2))
+            newStrain = numpy.reshape(newStrain, self.shape)
             self.strains.append([newStrain])
 
 
@@ -108,5 +108,3 @@ while True:
     env.render()
     action = agent.act(ob, 0)
     ob, reward, done, info = env.step(action[0])
-    if done:
-        break
