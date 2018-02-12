@@ -7,10 +7,11 @@ from keras.models import Model
 from keras.layers import Input, Dense
 class Agent(object):
     """The world's simplest agent!"""
-    def __init__(self, strain_count = 10, mutation_chance=0.001):
+    def __init__(self, strain_count = 10, mutation_chance=0.001, crossover_points = 1):
         self.strains = []
         self.nextGen = []
         self.strain_count = strain_count
+        self.crossover_points = crossover_points
         self.model = self.createModel()
         self.mutation_chance = mutation_chance
         self.best = 0
@@ -54,10 +55,24 @@ class Agent(object):
         # add the best strain back into the pool
         self.strains.append([numpy.reshape(father, self.shape)])
 
+        crossover_point_locations = []
+        while self.crossover_points > len(crossover_point_locations):
+            loc = random.randrange(len(father))
+            if loc not in crossover_point_locations:
+                crossover_point_locations.append(loc)
+
+
+        switch = False
+
         for _ in range(self.strain_count):
             newStrain = []
             for i in range(len(father)):
-                if 0 == random.randrange(0,1):
+
+                if i in crossover_point_locations:
+                    switch = not switch
+
+
+                if switch:
                     newStrain.append(father[i])
                 else:
                     newStrain.append(mother[i])
@@ -75,7 +90,7 @@ class Agent(object):
 
     
 env = gym.make('CartPole-v1')
-agent = Agent(strain_count=100)
+agent = Agent(strain_count=100, crossover_points=3)
 
 done = False
 generationSize = 10
