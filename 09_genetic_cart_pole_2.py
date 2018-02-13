@@ -80,7 +80,7 @@ class Agent(object):
                 # a chance to mutate
                 if random.random() < self.mutation_chance:
                     mIdx = random.randrange(0, len(newStrain))
-                    newStrain[mIdx] = random.uniform(-1, 1)+0.000001
+                    newStrain[mIdx] = random.uniform(-1, 1)
 
             newStrain = numpy.reshape(newStrain, self.shape)
             self.strains.append([newStrain])
@@ -90,7 +90,7 @@ class Agent(object):
 
     
 env = gym.make('CartPole-v1')
-agent = Agent(strain_count=100, crossover_points=3)
+agent = Agent(strain_count=10, crossover_points=3)
 
 done = False
 generationSize = 10
