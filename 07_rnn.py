@@ -2,8 +2,7 @@ import numpy as np
 import glob
 from keras.models import Sequential
 from keras.layers import SimpleRNN, Dense, Reshape
-from keras.preprocessing import sequence
-
+from keras.utils.np_utils import to_categorical
 CHARMAP = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
 
 SEQLEN = 5
@@ -24,6 +23,10 @@ def char_to_value(char):
         return idx
     else:
         return 0
+
+def char_to_class_map(char):
+    value = char_to_value(char)
+    return to_categorical(value,ALPHASIZE)
     
 def value_to_char(value):
     return CHARMAP[value]
@@ -37,7 +40,7 @@ def get_file_data(pattern, index):
         data = []
         with open(paths[index], "r") as file:
             for line in file:
-                line_values = [char_to_value(l) for l in line]
+                line_values = [char_to_class_map(l) for l in line]
                 data = data + list(line_values)
         return data
     else:
