@@ -6,3 +6,6 @@ __pycache__/
 /bin
 /include
 /lib
+
+/.models/*
+!/.models/.gitkeep

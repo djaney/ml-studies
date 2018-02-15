@@ -7,12 +7,9 @@ from keras.utils.np_utils import to_categorical
 CHARMAP = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
 
 SEQLEN = 5
-BATCHSIZE = 10
+BATCHSIZE = 100
 ALPHASIZE = len(CHARMAP)
-INTERNALSIZE = 512
-NLAYERS = 3
-learning_rate = 0.001  # fixed learning rate
-dropout_pkeep = 0.8    # some dropout
+INTERNALSIZE = 128
 FILES = "shakespeare/*.txt"
 LEARNING_RATE = 0.001
 
@@ -69,7 +66,7 @@ def build_line_data(file_data, seqlen, batch_index, batch_count):
 
 def create_model():
     model = Sequential()
-    model.add(LSTM(128,input_shape=(SEQLEN, ALPHASIZE)))
+    model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), return_sequences=True))
     model.add(Dense(ALPHASIZE))
     model.add(Activation('softmax'))
     #adam optimizer
@@ -77,19 +74,21 @@ def create_model():
     model.compile(loss='categorical_crossentropy', optimizer=optimizer)
     return model
 
-
 model = create_model()
-
-for i in range(1):
-    file_data = get_file_data(FILES, i)
+fileIndex = 0
+while True:
+    file_data = get_file_data(FILES, fileIndex)
+    if None == file_data: break
     idx = 0
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
-        print('before fit')
-        model.fit(x, y, epochs=3, batch_size=BATCHSIZE)
-        print('after fit')
+        model.fit(x, y, epochs=1, batch_size=BATCHSIZE)
         idx = idx + 1
         if 0 == len(x):
             break
         if idx > 10:
             break
+
+    model.save('.models/07_rnn.model')
+
+    fileIndex=fileIndex+1
