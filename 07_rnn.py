@@ -6,12 +6,13 @@ from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 CHARMAP = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
 
-SEQLEN = 5
+SEQLEN = 40
 BATCHSIZE = 100
 ALPHASIZE = len(CHARMAP)
-INTERNALSIZE = 128
+INTERNALSIZE = 512
 FILES = "shakespeare/*.txt"
 LEARNING_RATE = 0.001
+EPOCHS = 10
 
 
 ## Data related stuff
@@ -82,7 +83,7 @@ while True:
     idx = 0
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
-        model.fit(x, y, epochs=1, batch_size=BATCHSIZE)
+        model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
         idx = idx + 1
         if 0 == len(x):
             break
