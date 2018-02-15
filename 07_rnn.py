@@ -1,7 +1,8 @@
 import numpy as np
 import glob
 from keras.models import Sequential
-from keras.layers import SimpleRNN, Dense, Reshape
+from keras.layers import LSTM, Dense, Activation
+from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 CHARMAP = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
 
@@ -13,6 +14,7 @@ NLAYERS = 3
 learning_rate = 0.001  # fixed learning rate
 dropout_pkeep = 0.8    # some dropout
 FILES = "shakespeare/*.txt"
+LEARNING_RATE = 0.001
 
 
 ## Data related stuff
@@ -67,8 +69,12 @@ def build_line_data(file_data, seqlen, batch_index, batch_count):
 
 def create_model():
     model = Sequential()
-    model.add(SimpleRNN(SEQLEN*ALPHASIZE,input_shape=(SEQLEN, ALPHASIZE)))
-    model.compile(optimizer='sgd',loss='binary_crossentropy')
+    model.add(LSTM(128,input_shape=(SEQLEN, ALPHASIZE)))
+    model.add(Dense(ALPHASIZE))
+    model.add(Activation('softmax'))
+    #adam optimizer
+    optimizer = Adam(lr=LEARNING_RATE)
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer)
     return model
 
 
@@ -80,6 +86,7 @@ for i in range(1):
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
         model.fit(x, y, epochs=3, batch_size=BATCHSIZE)
+        print('trained')
         idx = idx + 1
         if 0 == len(x):
             break
