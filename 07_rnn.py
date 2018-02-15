@@ -85,8 +85,9 @@ for i in range(1):
     idx = 0
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
+        print('before fit')
         model.fit(x, y, epochs=3, batch_size=BATCHSIZE)
-        print('trained')
+        print('after fit')
         idx = idx + 1
         if 0 == len(x):
             break
