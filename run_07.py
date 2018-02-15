@@ -2,6 +2,7 @@ import numpy as np
 from keras.models import load_model
 from keras.utils.np_utils import to_categorical
 import sys
+from keras.preprocessing.sequence import pad_sequences
 
 CHARMAP = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
 ALPHASIZE = len(CHARMAP)
@@ -32,11 +33,16 @@ def res_to_word(res):
     return paragraph
 
 
-
+def generate_random():
+    pass
 
 model = load_model('.models/07_rnn.model')
-res = np.array([[char_to_class_map(x) for x in 'Long time ago, in a galaxy far far away']])
-while True:
-    res = model.predict(res)
-    words = res_to_word(res)
+start = 'Long time ago, in a galaxy far far away,'
+res = np.array([[char_to_class_map(x) for x in start]])
+sys.stdout.write(start)
+for _ in range(100):
+    res = pad_sequences(res, maxlen=40)
+    new_res = model.predict(res)
+    words = res_to_word(new_res)
     sys.stdout.write(words)
+    res = new_res

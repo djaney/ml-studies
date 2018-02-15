@@ -79,7 +79,9 @@ model = create_model()
 fileIndex = 0
 while True:
     file_data = get_file_data(FILES, fileIndex)
-    if None == file_data: break
+    if None == file_data:
+        fileIndex = 0
+        continue
     idx = 0
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
