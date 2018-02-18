@@ -87,7 +87,7 @@ for fileIndex in range(42):
         model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
         idx = idx + 1
         model.save('.models/07_rnn.model')
-        print('File #'+str(fileIndex+1))
+        print('File #'+str(fileIndex+1)+' Batch #'+str(idx+1))
         if 0 == len(x):
             break
     
