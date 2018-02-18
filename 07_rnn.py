@@ -4,7 +4,7 @@ from keras.models import Sequential
 from keras.layers import LSTM, Dense, Activation
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
-CHARMAP = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
+CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
 
 SEQLEN = 40
 BATCHSIZE = 100
@@ -22,10 +22,11 @@ def char_to_value(char):
     if idx >= 0:
         return idx
     else:
-        return 0
+        return None
 
 def char_to_class_map(char):
     value = char_to_value(char)
+    if value is None: return None
     return to_categorical(value,ALPHASIZE)
     
 def value_to_char(value):
@@ -41,6 +42,7 @@ def get_file_data(pattern, index):
         with open(paths[index], "r") as file:
             for line in file:
                 line_values = [char_to_class_map(l) for l in line]
+                line_values = [l for l in line_values if l is not None]
                 data = data + list(line_values)
         return data
     else:
