@@ -84,10 +84,10 @@ for fileIndex in range(42):
     idx = 0
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
+        print('File #'+str(fileIndex+1)+' Batch #'+str(idx+1))
         model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
         idx = idx + 1
         model.save('.models/07_rnn.model')
-        print('File #'+str(fileIndex+1)+' Batch #'+str(idx+1))
         if 0 == len(x):
             break
     
