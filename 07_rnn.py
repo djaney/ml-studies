@@ -1,6 +1,7 @@
 import numpy as np
 import glob
-from keras.models import Sequential
+import os
+from keras.models import Sequential, load_model
 from keras.layers import LSTM, Dense, Activation
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
@@ -68,14 +69,19 @@ def build_line_data(file_data, seqlen, batch_index, batch_count):
 
 
 def create_model():
-    model = Sequential()
-    model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), return_sequences=True))
-    model.add(Dense(ALPHASIZE))
-    model.add(Activation('softmax'))
-    #adam optimizer
-    optimizer = Adam(lr=LEARNING_RATE)
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer)
-    return model
+    if os.path.isfile('.models/07_rnn.model'):
+        print('load model')
+        return load_model('.models/07_rnn.model')
+    else:
+        print('create model')
+        model = Sequential()
+        model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), return_sequences=True))
+        model.add(Dense(ALPHASIZE))
+        model.add(Activation('softmax'))
+        #adam optimizer
+        optimizer = Adam(lr=LEARNING_RATE)
+        model.compile(loss='categorical_crossentropy', optimizer=optimizer)
+        return model
 
 model = create_model()
 fileIndex = 0
@@ -83,6 +89,7 @@ while True:
     file_data = get_file_data(FILES, fileIndex)
     if None == file_data:
         fileIndex = 0
+        print('back to first file')
         continue
     idx = 0
     while True:
