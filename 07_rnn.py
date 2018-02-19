@@ -7,7 +7,7 @@ from keras.utils.np_utils import to_categorical
 CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!()\",.?"
 
 SEQLEN = 40
-BATCHSIZE = 100
+BATCHSIZE = 1000
 ALPHASIZE = len(CHARMAP)
 INTERNALSIZE = 512
 FILES = "shakespeare/*.txt"
