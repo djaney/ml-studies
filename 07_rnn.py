@@ -4,6 +4,8 @@ from keras.models import Sequential, load_model
 from keras.layers import LSTM, Dense, Activation
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
+from keras.preprocessing.sequence import pad_sequences
+import random
 CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!()\",.?"
 
 SEQLEN = 40
@@ -13,7 +15,8 @@ INTERNALSIZE = 512
 FILES = "shakespeare/*.txt"
 LEARNING_RATE = 0.001
 EPOCHS = 10
-
+TRIAL_FILE = '.trials/07_rnn';
+MODEL_FILE = '.models/07_rnn.h5';
 
 ## Data related stuff
         
@@ -31,6 +34,14 @@ def char_to_class_map(char):
     
 def value_to_char(value):
     return CHARMAP[value]
+
+def res_to_word(res):
+    paragraph = '';
+    for line in res:
+        for letter in line:
+            char = value_to_char(np.argmax(letter))
+            paragraph = paragraph+char
+    return paragraph
 
 # iterate every single file
 def get_file_data(pattern, index):
@@ -77,19 +88,43 @@ def create_model():
     model.compile(loss='categorical_crossentropy', optimizer=optimizer)
     return model
 
+def run_trial(batchNumber):
+    print('Writing to result to file')
+    model = load_model(MODEL_FILE)
+    words = random.choice(CHARMAP[28:54]) # start with a capital letter
+    for _ in range(100):
+        res = np.array([[char_to_class_map(x) for x in words]])
+        res = pad_sequences(res, maxlen=SEQLEN)
+        new_res = model.predict(res)
+        words = words + res_to_word(new_res)
+
+
+    with open('{}-{:010d}.txt'.format(TRIAL_FILE, batchNumber),'w')  as file:
+        file.write(words) 
+
+
 model = create_model()
+model.save(MODEL_FILE)
+run_trial(0)
+
 fileIndex = 0
+batchNumber = 1
 for fileIndex in range(42):
     file_data = get_file_data(FILES, fileIndex)
     idx = 0
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
-        print('File #'+str(fileIndex+1)+' Batch #'+str(idx+1))
+        print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
         if 0 == len(x):
             break
         model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
+        model.save(MODEL_FILE)
+
+        if 0 == batchNumber % 50:
+            run_trial(batchNumber)
+
         idx = idx + 1
-        model.save('.models/07_rnn.model')
+        batchNumber = batchNumber + 1
     
 
     fileIndex=fileIndex+1
