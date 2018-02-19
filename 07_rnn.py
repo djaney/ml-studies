@@ -4,7 +4,7 @@ from keras.models import Sequential, load_model
 from keras.layers import LSTM, Dense, Activation
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
-CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
+CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!()\",.?"
 
 SEQLEN = 40
 BATCHSIZE = 100

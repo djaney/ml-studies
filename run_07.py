@@ -4,7 +4,7 @@ from keras.utils.np_utils import to_categorical
 import sys
 from keras.preprocessing.sequence import pad_sequences
 
-CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=!@#$%^&*()_+`~[]\{}|;':\",./<>?"
+CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!()\",.?"
 ALPHASIZE = len(CHARMAP)
 SEQLEN = 40
 
