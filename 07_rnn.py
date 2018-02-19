@@ -6,7 +6,7 @@ from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 from keras.preprocessing.sequence import pad_sequences
 import random
-CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!()\",.?"
+CHARMAP = " \n\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!()\",.?"
 
 SEQLEN = 40
 BATCHSIZE = 100
