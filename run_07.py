@@ -38,7 +38,7 @@ def generate_random():
 
 model = load_model('.models/07_rnn.model')
 words = 'A'
-for _ in range(10):
+for _ in range(100):
     res = np.array([[char_to_class_map(x) for x in words]])
     res = pad_sequences(res, maxlen=SEQLEN)
     new_res = model.predict(res)
