@@ -3,6 +3,7 @@ from keras.models import load_model
 from keras.utils.np_utils import to_categorical
 import sys
 from keras.preprocessing.sequence import pad_sequences
+import random
 
 CHARMAP = " \nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!()\",.?"
 ALPHASIZE = len(CHARMAP)
@@ -37,7 +38,7 @@ def generate_random():
     pass
 
 model = load_model('.models/07_rnn.model')
-words = 'A'
+words = random.choice(CHARMAP[28:54]) # start with a capital letter
 for _ in range(100):
     res = np.array([[char_to_class_map(x) for x in words]])
     res = pad_sequences(res, maxlen=SEQLEN)
