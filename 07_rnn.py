@@ -91,7 +91,7 @@ def create_model():
 def run_trial(batchNumber):
     print('Writing to result to file')
     model = load_model(MODEL_FILE)
-    words = random.choice(CHARMAP[28:54]) # start with a capital letter
+    words = '\tLONG TIME AGO IN A GALAXY FAR FAR AWAY' # start with a capital letter
     for _ in range(100):
         res = np.array([[char_to_class_map(x) for x in words]])
         res = pad_sequences(res, maxlen=SEQLEN)
