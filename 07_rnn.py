@@ -130,6 +130,8 @@ for fileIndex in range(fileIndex, 42):
     file_data = get_file_data(FILES, fileIndex)
     if not recovery:
         idx = 0
+    else:
+        recovery = False
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
         print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
