@@ -11,7 +11,7 @@ import pickle
 CHARMAP = " \n\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!:()\",.?"
 
 SEQLEN = 40
-BATCHSIZE = 500
+BATCHSIZE = 1000
 ALPHASIZE = len(CHARMAP)
 INTERNALSIZE = 512
 FILES = "shakespeare/*.txt"
@@ -140,7 +140,7 @@ for fileIndex in range(fileIndex, 42):
         with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
             pickle.dump([fileIndex, idx, batchNumber], f)
 
-        if 0 == batchNumber % 50:
+        if 0 == batchNumber % 100:
             run_trial(batchNumber)
 
         idx = idx + 1
