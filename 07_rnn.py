@@ -7,10 +7,11 @@ from keras.utils.np_utils import to_categorical
 from keras.preprocessing.sequence import pad_sequences
 import random
 import os
+import pickle
 CHARMAP = " \n\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!:()\",.?"
 
 SEQLEN = 40
-BATCHSIZE = 5000
+BATCHSIZE = 500
 ALPHASIZE = len(CHARMAP)
 INTERNALSIZE = 512
 FILES = "shakespeare/*.txt"
@@ -108,14 +109,27 @@ def run_trial(batchNumber):
 
 
 model = create_model()
-model.save(MODEL_FILE)
-run_trial(0)
 
-fileIndex = 0
-batchNumber = 1
-for fileIndex in range(42):
+if os.path.isfile(MODEL_FILE+'.pkl'):
+    with open(MODEL_FILE+'.pkl', 'rb') as f:
+        fileIndex, idx, batchNumber = pickle.load(f)
+    recovery = True
+else:
+    recovery = False
+
+model.save(MODEL_FILE)
+
+if not recovery:
+    run_trial(0)
+
+if not recovery:
+    fileIndex = 0
+    batchNumber = 1
+
+for fileIndex in range(fileIndex, 42):
     file_data = get_file_data(FILES, fileIndex)
-    idx = 0
+    if not recovery:
+        idx = 0
     while True:
         x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
         print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
@@ -123,6 +137,8 @@ for fileIndex in range(42):
             break
         model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
         model.save(MODEL_FILE)
+        with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+            pickle.dump([fileIndex, idx, batchNumber], f)
 
         if 0 == batchNumber % 50:
             run_trial(batchNumber)
@@ -132,3 +148,5 @@ for fileIndex in range(42):
     
 
     fileIndex=fileIndex+1
+
+os.remove(MODEL_FILE+'.pkl')
