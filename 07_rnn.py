@@ -1,20 +1,21 @@
 import numpy as np
 import glob
 from keras.models import Sequential, load_model
-from keras.layers import LSTM, Dense, Activation
+from keras.layers import GRU, Dense, Activation
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 from keras.preprocessing.sequence import pad_sequences
 import random
+import os
 CHARMAP = " \n\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!:()\",.?"
 
 SEQLEN = 40
-BATCHSIZE = 100
+BATCHSIZE = 5000
 ALPHASIZE = len(CHARMAP)
 INTERNALSIZE = 512
 FILES = "shakespeare/*.txt"
 LEARNING_RATE = 0.001
-EPOCHS = 10
+EPOCHS = 1
 TRIAL_FILE = '.trials/07_rnn';
 MODEL_FILE = '.models/07_rnn.h5';
 
@@ -79,13 +80,16 @@ def build_line_data(file_data, seqlen, batch_index, batch_count):
 
 
 def create_model():
-    model = Sequential()
-    model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), return_sequences=True))
-    model.add(Dense(ALPHASIZE))
-    model.add(Activation('softmax'))
-    #adam optimizer
-    optimizer = Adam(lr=LEARNING_RATE)
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer)
+    if os.path.isfile(MODEL_FILE):
+        model = load_model(MODEL_FILE)
+    else:
+        model = Sequential()
+        model.add(GRU(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), return_sequences=True))
+        model.add(Dense(ALPHASIZE))
+        model.add(Activation('softmax'))
+        #adam optimizer
+        optimizer = Adam(lr=LEARNING_RATE)
+        model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     return model
 
 def run_trial(batchNumber):
