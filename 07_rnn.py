@@ -125,30 +125,30 @@ if not recovery:
 if not recovery:
     fileIndex = 0
     batchNumber = 1
+while True:
+    for fileIndex in range(fileIndex, 42):
+        file_data = get_file_data(FILES, fileIndex)
+        if not recovery:
+            idx = 0
+        else:
+            recovery = False
+        while True:
+            x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
+            print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
+            if 0 == len(x):
+                break
+            model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
+            model.save(MODEL_FILE)
+            with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+                pickle.dump([fileIndex, idx, batchNumber], f)
 
-for fileIndex in range(fileIndex, 42):
-    file_data = get_file_data(FILES, fileIndex)
-    if not recovery:
-        idx = 0
-    else:
-        recovery = False
-    while True:
-        x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
-        print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
-        if 0 == len(x):
-            break
-        model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
-        model.save(MODEL_FILE)
-        with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-            pickle.dump([fileIndex, idx, batchNumber], f)
+            if 0 == batchNumber % 100:
+                run_trial(batchNumber)
 
-        if 0 == batchNumber % 100:
-            run_trial(batchNumber)
+            idx = idx + 1
+            batchNumber = batchNumber + 1
+        
 
-        idx = idx + 1
-        batchNumber = batchNumber + 1
-    
+        fileIndex=fileIndex+1
 
-    fileIndex=fileIndex+1
-
-os.remove(MODEL_FILE+'.pkl')
+    os.remove(MODEL_FILE+'.pkl')
