@@ -141,7 +141,8 @@ while True:
             with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
                 pickle.dump([fileIndex, idx, batchNumber], f)
 
-            run_trial(batchNumber)
+            if 0 == batchNumber % 50:
+                run_trial(batchNumber)
 
             idx = idx + 1
             batchNumber = batchNumber + 1
