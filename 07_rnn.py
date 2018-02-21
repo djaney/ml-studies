@@ -94,9 +94,8 @@ def create_model():
     return model
 
 def run_trial(batchNumber):
-    print('Writing to result to file')
     model = load_model(MODEL_FILE)
-    words = '\tLONG TIME AGO IN A GALAXY FAR FAR AWAY' # start with a capital letter
+    words = '\tLONG TIME AGO IN A GALAXY FAR FAR AWAY\n' # start with a capital letter
     for _ in range(100):
         res = np.array([[char_to_class_map(x) for x in words]])
         res = pad_sequences(res, maxlen=SEQLEN)
@@ -104,7 +103,7 @@ def run_trial(batchNumber):
         words = words + res_to_word(new_res)
 
 
-    with open('{}-{:010d}.txt'.format(TRIAL_FILE, batchNumber),'w')  as file:
+    with open('{}.txt'.format(TRIAL_FILE),'w')  as file:
         file.write(words) 
 
 
