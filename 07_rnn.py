@@ -149,5 +149,5 @@ while True:
         
 
         fileIndex=fileIndex+1
-
-    os.remove(MODEL_FILE+'.pkl')
+    if os.path.isfile(MODEL_FILE+'.pkl'):
+        os.remove(MODEL_FILE+'.pkl')
