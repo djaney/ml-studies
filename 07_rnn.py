@@ -121,10 +121,11 @@ model.save(MODEL_FILE)
 if not recovery:
     run_trial(0)
 
-if not recovery:
-    fileIndex = 0
-    batchNumber = 1
+
 while True:
+    if not recovery:
+        fileIndex = 0
+        batchNumber = 1
     for fileIndex in range(fileIndex, 42):
         file_data = get_file_data(FILES, fileIndex)
         if not recovery:
