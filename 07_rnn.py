@@ -96,7 +96,7 @@ def create_model():
 def run_trial(batchNumber):
     model = load_model(MODEL_FILE)
     words = '\tLONG TIME AGO IN A GALAXY FAR FAR AWAY\n' # start with a capital letter
-    for _ in range(10000):
+    for _ in range(2500):
         res = np.array([[char_to_class_map(x) for x in words]])
         res = pad_sequences(res, maxlen=SEQLEN)
         new_res = model.predict(res)
