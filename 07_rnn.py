@@ -67,7 +67,7 @@ def build_line_data(file_data, seqlen, batch_index, batch_count):
     end = start+seqlen
     x = []
     y = []
-    while end+1 <= length and len(x) < batch_count:
+    while end+1 < length and len(x) < batch_count:
         x_line = file_data[start:end]
         y_line = file_data[end+1]
         x.append(x_line)
@@ -140,7 +140,7 @@ for fileIndex in range(fileIndex, 42):
         with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
             pickle.dump([fileIndex, idx, batchNumber], f)
 
-        if 0 == batchNumber % 50:
+        if 0 == batchNumber % 10:
             run_trial(1000)
 
         idx = idx + 1
