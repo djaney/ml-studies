@@ -119,7 +119,7 @@ else:
 model.save(MODEL_FILE)
 
 
-run_trial(100)
+run_trial(1000)
 
 
 if not recovery:
@@ -142,7 +142,7 @@ for fileIndex in range(fileIndex, 42):
             pickle.dump([fileIndex, idx, batchNumber], f)
 
         if 0 == batchNumber % 50:
-            run_trial(100)
+            run_trial(1000)
 
         idx = idx + 1
         batchNumber = batchNumber + 1
