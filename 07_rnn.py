@@ -1,7 +1,7 @@
 import numpy as np
 import glob
 from keras.models import Sequential, load_model
-from keras.layers import GRU, Dense, Activation
+from keras.layers import LSTM, Dense, Activation
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 from keras.preprocessing.sequence import pad_sequences
@@ -85,7 +85,7 @@ def create_model():
         model = load_model(MODEL_FILE)
     else:
         model = Sequential()
-        model.add(GRU(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), return_sequences=True))
+        model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), return_sequences=True, dropout=0.2))
         model.add(Dense(ALPHASIZE))
         model.add(Activation('softmax'))
         #adam optimizer
@@ -122,33 +122,32 @@ model.save(MODEL_FILE)
 run_trial(0)
 
 
-while True:
+if not recovery:
+    fileIndex = 0
+    batchNumber = 1
+for fileIndex in range(fileIndex, 42):
+    file_data = get_file_data(FILES, fileIndex)
     if not recovery:
-        fileIndex = 0
-        batchNumber = 1
-    for fileIndex in range(fileIndex, 42):
-        file_data = get_file_data(FILES, fileIndex)
-        if not recovery:
-            idx = 0
-        else:
-            recovery = False
-        while True:
-            x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
-            print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
-            if 0 == len(x):
-                break
-            model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
-            model.save(MODEL_FILE)
-            with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-                pickle.dump([fileIndex, idx, batchNumber], f)
+        idx = 0
+    else:
+        recovery = False
+    while True:
+        x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
+        print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
+        if 0 == len(x):
+            break
+        model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
+        model.save(MODEL_FILE)
+        with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+            pickle.dump([fileIndex, idx, batchNumber], f)
 
-            if 0 == batchNumber % 50:
-                run_trial(batchNumber)
+        if 0 == batchNumber % 50:
+            run_trial(batchNumber)
 
-            idx = idx + 1
-            batchNumber = batchNumber + 1
-        
+        idx = idx + 1
+        batchNumber = batchNumber + 1
+    
 
-        fileIndex=fileIndex+1
-    if os.path.isfile(MODEL_FILE+'.pkl'):
-        os.remove(MODEL_FILE+'.pkl')
+    fileIndex=fileIndex+1
+if os.path.isfile(MODEL_FILE+'.pkl'):
+    os.remove(MODEL_FILE+'.pkl')
