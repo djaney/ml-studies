@@ -96,11 +96,11 @@ def create_model():
 def run_trial(batchNumber):
     model = load_model(MODEL_FILE)
     words = '\tLONG TIME AGO IN A GALAXY FAR FAR AWAY\n' # start with a capital letter
-    for _ in range(100):
+    for _ in range(1000):
         res = np.array([[char_to_class_map(x) for x in words]])
         res = pad_sequences(res, maxlen=SEQLEN)
         new_res = model.predict(res)
-        words = words + res_to_word(new_res)
+        words = words + res_to_word(new_res)[-1:]
 
 
     with open('{}.txt'.format(TRIAL_FILE),'w')  as file:
