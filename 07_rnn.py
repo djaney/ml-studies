@@ -118,8 +118,8 @@ else:
 
 model.save(MODEL_FILE)
 
-if not recovery:
-    run_trial(0)
+
+run_trial(0)
 
 
 while True:
