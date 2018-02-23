@@ -10,7 +10,7 @@ import os
 import pickle
 CHARMAP = " \n\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!:()\",.?"
 
-SEQLEN = 40
+SEQLEN = 100
 BATCHSIZE = 1000
 ALPHASIZE = len(CHARMAP)
 INTERNALSIZE = 512
@@ -70,7 +70,7 @@ def build_line_data(file_data, seqlen, batch_index, batch_count):
     y = []
     while end+1 <= length and len(x) < batch_count:
         x_line = file_data[start:end]
-        y_line = file_data[start+1:end+1]
+        y_line = file_data[end+1]
         x.append(x_line)
         y.append(y_line)
         start = start + 1
@@ -85,7 +85,7 @@ def create_model():
         model = load_model(MODEL_FILE)
     else:
         model = Sequential()
-        model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), return_sequences=True, dropout=0.2))
+        model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2))
         model.add(Dense(ALPHASIZE))
         model.add(Activation('softmax'))
         #adam optimizer
@@ -96,11 +96,11 @@ def create_model():
 def run_trial(batchNumber):
     model = load_model(MODEL_FILE)
     words = '\tLONG TIME AGO IN A GALAXY FAR FAR AWAY\n' # start with a capital letter
-    for _ in range(2500):
+    for _ in range(10):
         res = np.array([[char_to_class_map(x) for x in words]])
         res = pad_sequences(res, maxlen=SEQLEN)
         new_res = model.predict(res)
-        words = words + res_to_word(new_res)[-1:]
+        words = words + res_to_word(new_res)
 
 
     with open('{}.txt'.format(TRIAL_FILE),'w')  as file:
