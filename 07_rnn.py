@@ -38,12 +38,12 @@ def value_to_char(value):
     return CHARMAP[value]
 
 def res_to_word(res):
-    paragraph = '';
-    for line in res:
-        for letter in line:
-            char = value_to_char(np.argmax(letter))
-            paragraph = paragraph+char
-    return paragraph
+    words = ''
+
+    for r in res:
+        print(r, np.argmax(r))
+        words = words + value_to_char(np.argmax(r))
+    return words
 
 # iterate every single file
 def get_file_data(pattern, index):
@@ -93,10 +93,10 @@ def create_model():
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     return model
 
-def run_trial(batchNumber):
+def run_trial(length):
     model = load_model(MODEL_FILE)
     words = '\tLONG TIME AGO IN A GALAXY FAR FAR AWAY\n' # start with a capital letter
-    for _ in range(10):
+    for _ in range(length):
         res = np.array([[char_to_class_map(x) for x in words]])
         res = pad_sequences(res, maxlen=SEQLEN)
         new_res = model.predict(res)
@@ -119,7 +119,7 @@ else:
 model.save(MODEL_FILE)
 
 
-run_trial(0)
+run_trial(100)
 
 
 if not recovery:
@@ -142,7 +142,7 @@ for fileIndex in range(fileIndex, 42):
             pickle.dump([fileIndex, idx, batchNumber], f)
 
         if 0 == batchNumber % 50:
-            run_trial(batchNumber)
+            run_trial(100)
 
         idx = idx + 1
         batchNumber = batchNumber + 1
