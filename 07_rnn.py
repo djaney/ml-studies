@@ -41,7 +41,6 @@ def res_to_word(res):
     words = ''
 
     for r in res:
-        print(r, np.argmax(r))
         words = words + value_to_char(np.argmax(r))
     return words
 
