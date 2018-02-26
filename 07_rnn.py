@@ -84,7 +84,7 @@ def create_model():
         model = load_model(MODEL_FILE)
     else:
         model = Sequential()
-        model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2, stateful=True))
+        model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2))
         model.add(Dense(ALPHASIZE))
         model.add(Activation('softmax'))
         #adam optimizer
