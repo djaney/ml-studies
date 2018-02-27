@@ -1,31 +1,30 @@
+import sys
 import numpy as np
 import glob
 from keras.models import Sequential, load_model
 from keras.layers import LSTM, Dense, Activation, LeakyReLU
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
-from keras.preprocessing.sequence import pad_sequences
 import random
 import os
 import pickle
-CHARMAP = " \n\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!:()\",.?"
+CHARMAP = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!:()\",.? \n\t"
+# CHARMAP = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!:()\",.? "
 
 SEQLEN = 100
 BATCHSIZE = 1000
 ALPHASIZE = len(CHARMAP)
 FILES = "shakespeare/*.txt"
-EPOCHS = 3
+EPOCHS = 30
 TRIAL_FILE = '.trials/07_rnn';
 MODEL_FILE = '.models/07_rnn.h5';
 
 ## Data related stuff
+char_to_int = dict((c, i) for i, c in enumerate(CHARMAP))
+int_to_char = dict((i, c) for i, c in enumerate(CHARMAP))
         
 def char_to_value(char):
-    idx = CHARMAP.find(char)
-    if idx >= 0:
-        return idx
-    else:
-        return None
+    return char_to_int[char]
 
 def char_to_class_map(char):
     value = char_to_value(char)
@@ -33,11 +32,10 @@ def char_to_class_map(char):
     return to_categorical(value,ALPHASIZE)
     
 def value_to_char(value):
-    return CHARMAP[value]
+    return int_to_char[value]
 
 def res_to_word(res):
     words = ''
-
     for r in res:
         words = words + value_to_char(np.argmax(r))
     return words
@@ -48,26 +46,25 @@ def get_file_data(pattern, index):
     length = len(paths)
     
     if index < length:
-        data = []
+        data = ''
         with open(paths[index], "r") as file:
-            for line in file:
-                line_values = [char_to_class_map(l) for l in line]
-                line_values = [l for l in line_values if l is not None]
-                data = data + list(line_values)
+            data = file.read()
+            data = filter_string(data)
+            data = [char_to_class_map(l) for l in data]
         return data
     else:
         return None
 
 # get batch data in file
-def build_line_data(file_data, seqlen, batch_index, batch_count):
+def build_batch_data(file_data, seqlen, batch_index, batch_count):
     length = len(file_data)
     start = batch_index * batch_count
     end = start+seqlen
     x = []
     y = []
-    while end+1 < length and (len(x) < batch_count or 0 > batch_count):
+    while end < length and (len(x) < batch_count or 0 > batch_count):
         x_line = file_data[start:end]
-        y_line = file_data[end+1]
+        y_line = file_data[end]
         x.append(x_line)
         y.append(y_line)
         start = start + 1
@@ -82,7 +79,7 @@ def create_model():
         model = load_model(MODEL_FILE)
     else:
         model = Sequential()
-        model.add(LSTM(256,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2, return_sequences=True))
+        model.add(LSTM(64,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2, return_sequences=True))
         model.add(LeakyReLU(alpha=0.3))
         model.add(LSTM(256, dropout=0.2, return_sequences=False))
         model.add(LeakyReLU(alpha=0.3))
@@ -93,11 +90,12 @@ def create_model():
 
 def run_trial(length, sample):
     model = load_model(MODEL_FILE)
-    words = sample # start with a capital letter
+    words = filter_string(sample) # start with a capital letter
+
     for _ in range(length):
-        res = np.array([[char_to_class_map(x) for x in words]])
-        res = [l for l in res if l is not None]
-        res = pad_sequences(res, maxlen=SEQLEN)
+        trimmed = words[-SEQLEN:]
+        res = [char_to_class_map(x) for x in trimmed]
+        res = np.array([res])
         new_res = model.predict(res)
         words = words + res_to_word(new_res)
 
@@ -108,8 +106,12 @@ def run_trial(length, sample):
 def get_sample(file):
     data = ''
     with open(file, "r") as file:
-        data = file.read(SEQLEN) 
+        while len(data) < SEQLEN:
+            data = data + filter_string(file.read(SEQLEN-len(data)))
     return data
+
+def filter_string(s):
+    return ''.join([c for c in s if c in CHARMAP])
 
 model = create_model()
 
@@ -122,7 +124,10 @@ else:
 
 model.save(MODEL_FILE)
 
-run_trial(1000, get_sample('shakespeare/1kinghenryiv.txt'))
+
+
+
+# run_trial(1000, get_sample('shakespeare/1kinghenryiv.txt'))
 
 if not recovery:
     fileIndex = 0
@@ -134,18 +139,21 @@ for fileIndex in range(fileIndex, 42):
     else:
         recovery = False
     while True:
-        x,y = build_line_data(file_data, SEQLEN, idx ,BATCHSIZE)
+        x,y = build_batch_data(file_data, SEQLEN, idx ,BATCHSIZE)
         print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
         if 0 == len(x):
             break
+
         model.fit(x, y, epochs=EPOCHS, batch_size=len(x))
+
+
         model.save(MODEL_FILE)
         with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
             pickle.dump([fileIndex, idx, batchNumber], f)
 
         paths = glob.glob(FILES)
-        if batchNumber % 10:
-            run_trial(1000, get_sample('shakespeare/1kinghenryiv.txt'))
+        # if batchNumber % 10:
+        run_trial(1000, get_sample(paths[fileIndex]))
 
         idx = idx + 1
         batchNumber = batchNumber + 1
