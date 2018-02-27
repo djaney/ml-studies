@@ -79,7 +79,7 @@ def create_model():
         model = load_model(MODEL_FILE)
     else:
         model = Sequential()
-        model.add(LSTM(64,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2, return_sequences=True))
+        model.add(LSTM(256,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2, return_sequences=True))
         model.add(LeakyReLU(alpha=0.3))
         model.add(LSTM(256, dropout=0.2, return_sequences=False))
         model.add(LeakyReLU(alpha=0.3))
