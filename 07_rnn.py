@@ -1,7 +1,7 @@
 import numpy as np
 import glob
 from keras.models import Sequential, load_model
-from keras.layers import LSTM, Dense, Activation
+from keras.layers import LSTM, Dense, Activation, LeakyReLU
 from keras.optimizers import Adam
 from keras.utils.np_utils import to_categorical
 from keras.preprocessing.sequence import pad_sequences
@@ -13,10 +13,8 @@ CHARMAP = " \n\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-!
 SEQLEN = 100
 BATCHSIZE = 1000
 ALPHASIZE = len(CHARMAP)
-INTERNALSIZE = 512
 FILES = "shakespeare/*.txt"
-LEARNING_RATE = 0.001
-EPOCHS = 1
+EPOCHS = 3
 TRIAL_FILE = '.trials/07_rnn';
 MODEL_FILE = '.models/07_rnn.h5';
 
@@ -67,7 +65,7 @@ def build_line_data(file_data, seqlen, batch_index, batch_count):
     end = start+seqlen
     x = []
     y = []
-    while end+1 < length and len(x) < batch_count:
+    while end+1 < length and (len(x) < batch_count or 0 > batch_count):
         x_line = file_data[start:end]
         y_line = file_data[end+1]
         x.append(x_line)
@@ -84,19 +82,21 @@ def create_model():
         model = load_model(MODEL_FILE)
     else:
         model = Sequential()
-        model.add(LSTM(INTERNALSIZE,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2))
-        model.add(Dense(ALPHASIZE))
-        model.add(Activation('softmax'))
+        model.add(LSTM(256,input_shape=(SEQLEN, ALPHASIZE), dropout=0.2, return_sequences=True))
+        model.add(LeakyReLU(alpha=0.3))
+        model.add(LSTM(256, dropout=0.2, return_sequences=False))
+        model.add(LeakyReLU(alpha=0.3))
+        model.add(Dense(ALPHASIZE, activation='softmax'))
         #adam optimizer
-        optimizer = Adam(lr=LEARNING_RATE)
-        model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
-def run_trial(length):
+def run_trial(length, sample):
     model = load_model(MODEL_FILE)
-    words = '\tLONG TIME AGO IN A GALAXY FAR FAR AWAY\n' # start with a capital letter
+    words = sample # start with a capital letter
     for _ in range(length):
         res = np.array([[char_to_class_map(x) for x in words]])
+        res = [l for l in res if l is not None]
         res = pad_sequences(res, maxlen=SEQLEN)
         new_res = model.predict(res)
         words = words + res_to_word(new_res)
@@ -105,6 +105,11 @@ def run_trial(length):
     with open('{}.txt'.format(TRIAL_FILE),'w')  as file:
         file.write(words) 
 
+def get_sample(file):
+    data = ''
+    with open(file, "r") as file:
+        data = file.read(SEQLEN) 
+    return data
 
 model = create_model()
 
@@ -117,9 +122,7 @@ else:
 
 model.save(MODEL_FILE)
 
-
-run_trial(1000)
-
+run_trial(1000, get_sample('shakespeare/1kinghenryiv.txt'))
 
 if not recovery:
     fileIndex = 0
@@ -135,13 +138,14 @@ for fileIndex in range(fileIndex, 42):
         print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
         if 0 == len(x):
             break
-        model.fit(x, y, epochs=EPOCHS, batch_size=BATCHSIZE)
+        model.fit(x, y, epochs=EPOCHS, batch_size=len(x))
         model.save(MODEL_FILE)
         with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
             pickle.dump([fileIndex, idx, batchNumber], f)
 
-        if 0 == batchNumber % 10:
-            run_trial(1000)
+        paths = glob.glob(FILES)
+        if batchNumber % 10:
+            run_trial(1000, get_sample('shakespeare/1kinghenryiv.txt'))
 
         idx = idx + 1
         batchNumber = batchNumber + 1
