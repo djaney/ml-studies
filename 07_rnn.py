@@ -172,4 +172,4 @@ def train():
 if 'train' == sys.argv[1]:
     train()
 elif 'generate' == sys.argv[1]:
-    run_trial(sys.argv[2], sys.argv[3], print_output=true)
+    run_trial(sys.argv[2], sys.argv[3], print_output=True)
