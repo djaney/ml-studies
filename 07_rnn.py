@@ -88,7 +88,7 @@ def create_model():
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
-def run_trial(length, sample):
+def run_trial(length, sample, print_output=False):
     model = load_model(MODEL_FILE)
     words = filter_string(sample) # start with a capital letter
 
@@ -99,9 +99,11 @@ def run_trial(length, sample):
         new_res = model.predict(res)
         words = words + res_to_word(new_res)
 
-
-    with open('{}.txt'.format(TRIAL_FILE),'w')  as file:
-        file.write(words) 
+    if print_output:
+        print(words)
+    else:
+        with open('{}.txt'.format(TRIAL_FILE),'w')  as file:
+            file.write(words) 
 
 def get_sample(file):
     data = ''
@@ -113,52 +115,61 @@ def get_sample(file):
 def filter_string(s):
     return ''.join([c for c in s if c in CHARMAP])
 
-model = create_model()
-
-if os.path.isfile(MODEL_FILE+'.pkl'):
-    with open(MODEL_FILE+'.pkl', 'rb') as f:
-        fileIndex, idx, batchNumber = pickle.load(f)
-    recovery = True
-else:
-    recovery = False
-
-model.save(MODEL_FILE)
-
 
 
 
 # run_trial(1000, get_sample('shakespeare/1kinghenryiv.txt'))
+def train():
 
-if not recovery:
-    fileIndex = 0
-    batchNumber = 1
-for fileIndex in range(fileIndex, 42):
-    file_data = get_file_data(FILES, fileIndex)
-    if not recovery:
-        idx = 0
+    model = create_model()
+
+    if os.path.isfile(MODEL_FILE+'.pkl'):
+        with open(MODEL_FILE+'.pkl', 'rb') as f:
+            fileIndex, idx, batchNumber = pickle.load(f)
+        recovery = True
     else:
         recovery = False
-    while True:
-        x,y = build_batch_data(file_data, SEQLEN, idx ,BATCHSIZE)
-        print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
-        if 0 == len(x):
-            break
 
-        model.fit(x, y, epochs=EPOCHS, batch_size=len(x))
+    model.save(MODEL_FILE)
 
 
-        model.save(MODEL_FILE)
-        with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-            pickle.dump([fileIndex, idx, batchNumber], f)
 
-        paths = glob.glob(FILES)
-        # if batchNumber % 10:
-        run_trial(1000, get_sample(paths[fileIndex]))
+    if not recovery:
+        fileIndex = 0
+        batchNumber = 1
+    for fileIndex in range(fileIndex, 42):
+        file_data = get_file_data(FILES, fileIndex)
+        if not recovery:
+            idx = 0
+        else:
+            recovery = False
+        while True:
+            x,y = build_batch_data(file_data, SEQLEN, idx ,BATCHSIZE)
+            print('File #'+str(fileIndex+1)+' Batch #'+str(batchNumber+1))
+            if 0 == len(x):
+                break
 
-        idx = idx + 1
-        batchNumber = batchNumber + 1
-    
+            model.fit(x, y, epochs=EPOCHS, batch_size=len(x))
 
-    fileIndex=fileIndex+1
-if os.path.isfile(MODEL_FILE+'.pkl'):
-    os.remove(MODEL_FILE+'.pkl')
+
+            model.save(MODEL_FILE)
+            with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+                pickle.dump([fileIndex, idx, batchNumber], f)
+
+            paths = glob.glob(FILES)
+            # if batchNumber % 10:
+            run_trial(1000, get_sample(paths[fileIndex]))
+
+            idx = idx + 1
+            batchNumber = batchNumber + 1
+        
+
+        fileIndex=fileIndex+1
+    if os.path.isfile(MODEL_FILE+'.pkl'):
+        os.remove(MODEL_FILE+'.pkl')
+
+
+if 'train' == sys.argv[1]:
+    train()
+elif 'generate' == sys.argv[1]:
+    run_trial(sys.argv[2], sys.argv[3], print_output=true)
