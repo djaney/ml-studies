@@ -90,7 +90,7 @@ def create_model():
 
 def run_trial(length, sample, print_output=False):
     model = load_model(MODEL_FILE)
-    words = filter_string(sample) # start with a capital letter
+    words = filter_string(sample).rjust(SEQLEN) # start with a capital letter
 
     for _ in range(length):
         trimmed = words[-SEQLEN:]
@@ -98,6 +98,8 @@ def run_trial(length, sample, print_output=False):
         res = np.array([res])
         new_res = model.predict(res)
         words = words + res_to_word(new_res)
+
+    words = words.strip()
 
     if print_output:
         print(words)
@@ -172,4 +174,4 @@ def train():
 if 'train' == sys.argv[1]:
     train()
 elif 'generate' == sys.argv[1]:
-    run_trial(sys.argv[2], sys.argv[3], print_output=True)
+    run_trial(int(sys.argv[2]), sys.argv[3], print_output=True)
