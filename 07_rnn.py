@@ -151,7 +151,7 @@ def train():
             if 0 == len(x):
                 break
 
-            model.fit(x, y, epochs=EPOCHS, batch_size=len(x))
+            model.fit(x, y, epochs=EPOCHS, batch_size=len(x), shuffle=False)
 
 
             model.save(MODEL_FILE)
