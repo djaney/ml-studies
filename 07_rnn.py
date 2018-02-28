@@ -158,6 +158,7 @@ def train():
             with open(MODEL_FILE+'.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
                 pickle.dump([fileIndex, idx, batchNumber], f)
 
+            # if 0 == batchNumber % 100:
             paths = glob.glob(FILES)
             # if batchNumber % 10:
             run_trial(1000, get_sample(paths[fileIndex]))
