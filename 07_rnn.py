@@ -34,7 +34,7 @@ def char_to_class_map(char):
 def value_to_char(value):
     return int_to_char[value]
 
-def res_to_word(res):
+def ohe_to_string(res):
     words = ''
     for r in res:
         words = words + value_to_char(np.argmax(r))
@@ -97,9 +97,9 @@ def run_trial(length, sample, print_output=False):
         res = [char_to_class_map(x) for x in trimmed]
         res = np.array([res])
         new_res = model.predict(res)
-        words = words + res_to_word(new_res)
+        words = words + ohe_to_string(new_res)
 
-    words = words.strip()
+    words = words.lstrip(' ')
 
     if print_output:
         print(words)
@@ -174,4 +174,8 @@ def train():
 if 'train' == sys.argv[1]:
     train()
 elif 'generate' == sys.argv[1]:
-    run_trial(int(sys.argv[2]), sys.argv[3], print_output=True)
+    title = sys.argv[3]
+    author = sys.argv[4]
+
+    seed = "\t{}\n\n\t{}\n\n".format(title, author)
+    run_trial(int(sys.argv[2]), seed, print_output=True)
