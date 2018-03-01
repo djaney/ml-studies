@@ -11,8 +11,8 @@ END = 1
 
 EPOCHS = 50
 
-ENC_SEQ_SIZE = 10
-DEC_SEQ_SIZE = 3
+ENC_SEQ_SIZE = 50
+DEC_SEQ_SIZE = 50
 
 LATENT_DIM = 256
 
@@ -66,7 +66,6 @@ def load_data():
 	data = []
 	data.append(('what is your name'.split(' '), 'unsa imong pangalan'.split(' ')))
 	data.append(('what is your gender'.split(' '), 'lalaki ka o babae'.split(' ')))
-	load_tokens(data)
 	return data
 
 def load_tokens(data):
@@ -88,6 +87,7 @@ def load_tokens(data):
 
 def data_all():
 	data = load_data()
+	load_tokens(data)
 	x, y, z = data_batch(data[0][0],data[0][1])
 	for d in data[1:]:
 		_x, _y, _z = data_batch(d[0],d[1])
