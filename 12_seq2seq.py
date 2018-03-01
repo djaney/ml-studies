@@ -60,6 +60,18 @@ def data_batch(inp, out):
 
 	return x,y,z
 
+def data_all(data):
+	x = None
+	y = None
+	z = None
+
+	for d in data:
+		_x, _y, _z = data_batch(d[0],d[1])
+		x = _x if None == x else np.concatenate((x,_x), axis=0)
+		y = _y if None == y else np.concatenate((y,_y), axis=0)
+		z = _z if None == z else np.concatenate((z,_z), axis=0)
+	return x, y, z
+
 def train():
 	# Define an input sequence and process it.
 	encoder_inputs = Input(shape=(None, ENC_ALPHA_SIZE))
@@ -83,8 +95,9 @@ def train():
 	# `encoder_input_data` & `decoder_input_data` into `decoder_target_data`
 	model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
-
-	x,y,z = data_batch('what is your name'.split(' '), 'unsa imong pangalan'.split(' '))
+	data = []
+	data.append(('what is your name'.split(' '), 'unsa imong pangalan'.split(' ')))
+	x,y,z = data_all(data)
 
 
 	# Run training
