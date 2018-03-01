@@ -90,9 +90,7 @@ def train():
 	# Run training
 	model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
 	model.fit([x, y], z,
-		batch_size=len(x),
-		epochs=EPOCHS,
-		validation_split=0.2)
+		epochs=EPOCHS)
 
 	return model
 
@@ -122,11 +120,12 @@ def evaluate(model, inp):
 			break
 		out.append(dec_idx_to_val(pred_class))
 
-	print(out)
+	return ' '.join(out)
 
 def main():
 	model = train()
-	# evaluate(model, 'what is your name')
+	out = evaluate(model, 'what is your name')
+	print(out)
 
 
 main()
