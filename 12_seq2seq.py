@@ -124,8 +124,9 @@ def evaluate(model, inp):
 
 def main():
 	model = train()
-	out = evaluate(model, 'what is your name')
-	print(out)
+	while True:
+		out = evaluate(model, input('Input: '))
+		print('Output: ',out)
 
 
 main()
