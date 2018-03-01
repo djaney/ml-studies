@@ -15,7 +15,7 @@ END = 1
 EPOCHS = 100
 ENC_ALPHA_SIZE = len(ENC_ALPHA) + 1
 DEC_ALPHA_SIZE = len(DEC_ALPHA) + 2 # add 2 for pad and end
-ENC_SEQ_SIZE = 5
+ENC_SEQ_SIZE = 10
 DEC_SEQ_SIZE = 3
 
 LATENT_DIM = 256
@@ -53,7 +53,7 @@ def data_batch(inp, out):
 	y = np.array(pad_sequences(y, maxlen=DEC_SEQ_SIZE, value=PAD))
 	x_shape = x.shape
 	y_shape = y.shape
-
+	
 	x = to_categorical(x, num_classes=ENC_ALPHA_SIZE)
 	y = to_categorical(y, num_classes=DEC_ALPHA_SIZE)
 	z = to_categorical(z, num_classes=DEC_ALPHA_SIZE)
@@ -94,12 +94,39 @@ def train():
 		epochs=EPOCHS,
 		validation_split=0.2)
 
-def evaluate():
-	pass
+	return model
+
+def evaluate(model, inp):
+	out = []
+
+	enc = [enc_val_to_idx(i) for i in inp.split(' ')]
+	dec = [PAD] * DEC_SEQ_SIZE
+	enc = np.array([to_categorical(enc, num_classes=ENC_ALPHA_SIZE)])
+	dec = np.array([to_categorical(dec, num_classes=DEC_ALPHA_SIZE)])
+
+	# predict first
+	x = [enc,dec]
+	pred = model.predict(x)
+	pred_class = np.argmax(pred[0])
+	out.append(dec_idx_to_val(pred_class))
+
+	for _ in range(100):
+		dec = [[dec_val_to_idx(i) for i in out]]
+		dec = pad_sequences(dec, maxlen=DEC_SEQ_SIZE, value=PAD)
+		dec = np.array(to_categorical(dec, num_classes=DEC_ALPHA_SIZE))
+
+		x = [enc,dec]
+		pred = model.predict(x)
+		pred_class = np.argmax(pred[0])
+		if pred_class == END:
+			break
+		out.append(dec_idx_to_val(pred_class))
+
+	print(out)
 
 def main():
-	train()
-	evaluate()
+	model = train()
+	# evaluate(model, 'what is your name')
 
 
 main()
