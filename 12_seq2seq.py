@@ -9,7 +9,7 @@ from keras.utils.np_utils import to_categorical
 PAD = 0
 END = 1
 
-EPOCHS = 50
+EPOCHS = 200
 
 ENC_SEQ_SIZE = 50
 DEC_SEQ_SIZE = 50
