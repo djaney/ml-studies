@@ -37,8 +37,8 @@ def data_batch(inp, out):
 	y = []
 	z = []
 
-	enc = [enc_val_to_idx(i) for i in inp.split(' ')]
-	end_target = [dec_val_to_idx(i) for i in out.split(' ')]
+	enc = [enc_val_to_idx(i) for i in inp]
+	end_target = [dec_val_to_idx(i) for i in out]
 	end_target.insert(0, PAD)
 	end_target.append(END)
 	
@@ -84,7 +84,7 @@ def train():
 	model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
 
-	x,y,z = data_batch('what is your name', 'unsa imong pangalan')
+	x,y,z = data_batch('what is your name'.split(' '), 'unsa imong pangalan'.split(' '))
 
 
 	# Run training
@@ -120,13 +120,13 @@ def evaluate(model, inp):
 			break
 		out.append(dec_idx_to_val(pred_class))
 
-	return ' '.join(out)
+	return out
 
 def main():
 	model = train()
 	while True:
 		out = evaluate(model, input('Input: '))
-		print('Output: ',out)
+		print('Output: ',' '.join(out))
 
 
 main()
