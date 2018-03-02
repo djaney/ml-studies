@@ -1,3 +1,4 @@
+import sys
 from classes.base import Seq2Seq
 
 class BisayaSeqToSeq(Seq2Seq):
@@ -8,11 +9,18 @@ class BisayaSeqToSeq(Seq2Seq):
 		return data
 
 def main():
-	agent = BisayaSeqToSeq(epochs=200)
-	model = agent.train()
+
+
+	if 'train' == sys.argv[1]:
+		agent = BisayaSeqToSeq(epochs=200)
+		model = agent.train()
+		model.save('.models/12_seq2seq.h5')
+	elif 'play' == sys.argv[1]:
+		agent = BisayaSeqToSeq(model_filename='.models/12_seq2seq.h5')
+
+
 	while True:
 		out = agent.evaluate(list(input('Input: ')))
 		print('Output: ',''.join(out))
-
 
 main()

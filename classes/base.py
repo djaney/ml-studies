@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from keras.models import Model, load_model
 from keras.layers import Input, LSTM, Dense
@@ -99,6 +100,7 @@ class Seq2Seq:
 
 		x,y,z = self.data_all()
 		self.model.fit([x, y], z, epochs=self.EPOCHS)
+		return self.model
 
 	def create_model(self):
 		# Define an input sequence and process it.
