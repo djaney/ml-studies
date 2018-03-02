@@ -155,16 +155,16 @@ class SeqToSeq:
 class BisayaSeqToSeq(SeqToSeq):
 	def load_data(self):
 		data = []
-		data.append(('what is your name'.split(' '), 'unsa imong pangalan'.split(' ')))
-		data.append(('what is your gender'.split(' '), 'lalaki ka o babae'.split(' ')))
+		data.append((list('what is your name'), list('unsa imong pangalan')))
+		data.append((list('what is your gender'), list('lalaki ka o babae')))
 		return data
 
 def main():
-	agent = BisayaSeqToSeq()
+	agent = BisayaSeqToSeq(epochs=200)
 	model = agent.train()
 	while True:
-		out = agent.evaluate(input('Input: ').split(' '))
-		print('Output: ',' '.join(out))
+		out = agent.evaluate(list(input('Input: ')))
+		print('Output: ',''.join(out))
 
 
 main()
