@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-sudo docker run -it -v /home/dmabelin/projects/tensorflow/:/notebooks -p 8888:8888 tensorflow/tensorflow
