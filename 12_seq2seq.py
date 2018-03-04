@@ -20,7 +20,7 @@ def main():
 
 
 	while True:
-		out = agent.evaluate(list(input('Input: ')))
+		out, unk = agent.evaluate(list(input('Input: ')))
 		print('Output: ',''.join(out))
 
 main()

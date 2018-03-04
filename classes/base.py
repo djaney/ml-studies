@@ -128,8 +128,14 @@ class Seq2Seq:
 
 	def evaluate(self, inp):
 		out = []
+		unknown = []
+		enc = [self.enc_val_to_idx(i) for i in inp if i in self.enc_tokens]
+		for i in inp:
+			if i in self.enc_tokens:
+				enc.append(self.enc_val_to_idx(i))
+			else:
+				unknown.append(i)
 
-		enc = [self.enc_val_to_idx(i) for i in inp]
 		dec = [self.PAD] * self.DEC_SEQ_SIZE
 		enc = np.array([to_categorical(enc, num_classes=self.enc_token_size)])
 		dec = np.array([to_categorical(dec, num_classes=self.dec_token_size)])
@@ -152,4 +158,4 @@ class Seq2Seq:
 				break
 			out.append(self.dec_idx_to_val(pred_class))
 
-		return out
+		return out, unknown
