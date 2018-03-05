@@ -8,7 +8,7 @@ from keras.utils.np_utils import to_categorical
 
 class Seq2Seq:
 	
-	def __init__(self, model_filename=None, epochs=100, encode_sequence_size=10, decode_sequence_size=10):
+	def __init__(self, model_filename=None, epochs=100, encode_sequence_size=10, decode_sequence_size=10, data=None):
 
 
 		self.PAD = 0
@@ -27,7 +27,12 @@ class Seq2Seq:
 		self.enc_token_size = 0
 		self.dec_token_size = 0
 
-		self.training_data = self.load_data()
+		if data == None:
+			self.training_data = self.load_data()
+		else:
+			self.training_data = data
+
+		
 		self.load_tokens()
 
 		if model_filename is not None and os.path.isfile(model_filename):
@@ -75,12 +80,18 @@ class Seq2Seq:
 	def load_data(self):
 		raise "implement"
 
-	def load_tokens(self,):
-		for d in self.training_data:
-			self.enc_tokens = self.enc_tokens + d[0]
-			self.dec_tokens = self.dec_tokens + d[1]
-			self.enc_tokens = list(set(self.enc_tokens))
-			self.dec_tokens = list(set(self.dec_tokens))
+	def load_tokens(self, tokens=None):
+		if(tokens != None):
+			self.enc_tokens = tokens[0]
+			self.dec_tokens = tokens[1]
+		else:	
+			for d in self.training_data:
+				self.enc_tokens = self.enc_tokens + d[0]
+				self.dec_tokens = self.dec_tokens + d[1]
+				self.enc_tokens = list(set(self.enc_tokens))
+				self.dec_tokens = list(set(self.dec_tokens))
+
+		#map
 		self.enc_token_map = dict((c, i) for i, c in enumerate(self.enc_tokens))
 		self.dec_token_map = dict((c, i) for i, c in enumerate(self.dec_tokens))
 		self.enc_token_size = len(self.enc_tokens) + 1

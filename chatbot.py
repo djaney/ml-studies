@@ -1,30 +1,26 @@
 import sys
-import glob
+import pickle
 from classes.base import Seq2Seq
 from keras.preprocessing.text import text_to_word_sequence
 
 
 class BisayaSeqToSeq(Seq2Seq):
-	def load_data(self):
-		data = []
-		paths = glob.glob('data/chatbot/*.txt')
-		for path in paths:
-			with open(path) as file:
-				lines = list(file);
-				for i in range(len(lines)-1):
-					client = lines[i]
-					agent = lines[i+1]
-					data.append((text_to_word_sequence(client.strip()), text_to_word_sequence(agent.strip())))
-
-		return data
-
 def main():
 
 
 	if 'train' == sys.argv[1]:
-		agent = BisayaSeqToSeq(epochs=100)
-		model = agent.train()
-		model.save('.models/chatbot.h5')
+		data = []
+		with open('data/chatbot/codecamp.pkl', 'rb') as file:
+			lines = pickle.load(file)
+		for i in range(len(lines)-1):
+			client = lines[i]
+			agent = lines[i+1]
+			data.append((text_to_word_sequence(client.strip()), text_to_word_sequence(agent.strip())))
+			if 0 == 500 % i:
+				agent = BisayaSeqToSeq(epochs=10, data=data)
+				model = agent.train()
+				model.save('.models/chatbot.h5')
+				data = []
 	elif 'play' == sys.argv[1]:
 		agent = BisayaSeqToSeq(model_filename='.models/chatbot.h5')
 
