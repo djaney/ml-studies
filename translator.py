@@ -20,9 +20,9 @@ def main():
 	if 'train' == sys.argv[1]:
 		agent = BisayaSeqToSeq(epochs=100)
 		model = agent.train()
-		model.save('.models/chatbot.h5')
+		model.save('.models/translator.h5')
 	elif 'play' == sys.argv[1]:
-		agent = BisayaSeqToSeq(model_filename='.models/chatbot.h5')
+		agent = BisayaSeqToSeq(model_filename='.models/translator.h5')
 
 
 	while True:
