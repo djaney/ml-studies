@@ -2,16 +2,19 @@ import csv
 import sys
 import re
 import pickle
-
+from keras.preprocessing.text import text_to_word_sequence
 csv.field_size_limit(sys.maxsize)
 
 array = []
-
+tokens = []
 def flush(messages):
 	global array
+	global tokens
 	message = '\n'.join(messages)
 	message = filter(message)
 	array.append(message)
+	tokens = tokens + text_to_word_sequence(message);
+	tokens = list(set(tokens))
 
 def filter(text):
 	text = re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)
@@ -37,4 +40,4 @@ with open('/home/dmabelin/freecodecamp_casual_chatroom.csv') as file:
 		flush(messages)
 		messages = []
 with open('data/chatbot/codecamp.pkl', 'wb') as data_pkl:
-	pickle.dump(array, data_pkl)
+	pickle.dump((array, tokens), data_pkl)
