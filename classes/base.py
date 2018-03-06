@@ -8,7 +8,7 @@ from keras.utils.np_utils import to_categorical
 
 class Seq2Seq:
 	
-	def __init__(self, model_filename=None, epochs=100, encode_sequence_size=10, decode_sequence_size=10, data=None):
+	def __init__(self, model_filename=None, epochs=100, encode_sequence_size=10, decode_sequence_size=10, data=None, tokens=None):
 
 
 		self.PAD = 0
@@ -33,7 +33,7 @@ class Seq2Seq:
 			self.training_data = data
 
 		
-		self.load_tokens()
+		self.load_tokens(tokens)
 
 		if model_filename is not None and os.path.isfile(model_filename):
 			self.model = load_model(model_filename)
