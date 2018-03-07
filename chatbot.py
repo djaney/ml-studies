@@ -9,7 +9,7 @@ def main():
 	if 'train' == sys.argv[1]:
 		data = []
 		
-
+		tokens = []
 		df = pd.read_csv('data/chatbot/chat.csv', usecols=['client','agent'])
 
 		for idx, row in df.iterrows():
