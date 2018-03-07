@@ -6,8 +6,6 @@ from keras.preprocessing.text import text_to_word_sequence
 
 
 def main():
-	with open('data/chatbot/wordlist.txt') as file:
-		tokens = []
 	if 'train' == sys.argv[1]:
 		data = []
 		
