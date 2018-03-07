@@ -8,7 +8,7 @@ from keras.utils.np_utils import to_categorical
 
 class Seq2Seq:
 	
-	def __init__(self,tokens,model_filename=None, epochs=100, encode_sequence_size=10, decode_sequence_size=10):
+	def __init__(self,tokens,model_filename=None, epochs=100, encode_sequence_size=10, decode_sequence_size=10, internal_size=256):
 
 
 		self.PAD = 0
@@ -26,7 +26,7 @@ class Seq2Seq:
 		self.dec_token_map = []
 		self.enc_token_size = 0
 		self.dec_token_size = 0
-
+		self.internal_size = internal_size
 		
 		self.load_tokens(tokens)
 
@@ -52,10 +52,9 @@ class Seq2Seq:
 		z = []
 
 		# remove if not in vocabulary
-		inp = list(set(inp) & set(self.enc_tokens))
-		out = list(set(out) & set(self.dec_tokens))
-		enc = [self.enc_val_to_idx(i) for i in inp]
-		end_target = [self.dec_val_to_idx(i) for i in out]
+
+		enc = [self.enc_val_to_idx(i) for i in inp if i in self.enc_token_map.keys()]
+		end_target = [self.dec_val_to_idx(i) for i in out if i in self.dec_token_map.keys()]
 		end_target.insert(0, self.PAD)
 		end_target.append(self.END)
 		
@@ -78,7 +77,7 @@ class Seq2Seq:
 	def load_data(self):
 		raise "implement"
 
-	def load_tokens(self, tokens=None):
+	def load_tokens(self, tokens):
 		if(tokens != None):
 			self.enc_tokens = tokens[0]
 			self.dec_tokens = tokens[1]
@@ -101,13 +100,13 @@ class Seq2Seq:
 	def train(self, data):
 
 		x,y,z = self.data_all(data)
-		self.model.fit([x, y], z, epochs=self.EPOCHS)
+		self.model.fit([x, y], z, epochs=self.EPOCHS,shuffle=False)
 		return self.model
 
 	def create_model(self):
 		# Define an input sequence and process it.
 		encoder_inputs = Input(shape=(None, self.enc_token_size))
-		encoder = LSTM(256, return_state=True)
+		encoder = LSTM(self.internal_size, return_state=True)
 		encoder_outputs, state_h, state_c = encoder(encoder_inputs)
 		# We discard `encoder_outputs` and only keep the states.
 		encoder_states = [state_h, state_c]
@@ -117,7 +116,7 @@ class Seq2Seq:
 		# We set up our decoder to return full output sequences,
 		# and to return internal states as well. We don't use the 
 		# return states in the training model, but we will use them in inference.
-		decoder_lstm = LSTM(256, return_sequences=False, return_state=True)
+		decoder_lstm = LSTM(self.internal_size, return_sequences=False, return_state=True)
 		decoder_outputs, _, _ = decoder_lstm(decoder_inputs,
 		                                     initial_state=encoder_states)
 		decoder_dense = Dense(self.dec_token_size, activation='softmax')

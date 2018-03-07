@@ -7,35 +7,33 @@ from keras.preprocessing.text import text_to_word_sequence
 
 def main():
 	with open('data/chatbot/wordlist.txt') as file:
-		tokens = text_to_word_sequence(file.read(), split=',')
+		tokens = []
 	if 'train' == sys.argv[1]:
 		data = []
-		agent = Seq2Seq((tokens,tokens),epochs=50)
+		
 
-		df = pd.read_csv('/home/dmabelin/freecodecamp_casual_chatroom.csv', usecols=['fromUser.id','text'])
+		df = pd.read_csv('data/chatbot/chat.csv', usecols=['client','agent'])
 
-		# data.append((text_to_word_sequence('hello'), text_to_word_sequence('hi')))
-		# model = agent.train(data)
-
-		conv = []
 		for idx, row in df.iterrows():
-			if pd.isna(row['text']): continue
-			conv.append(row['text'])
-			if len(conv) > 1:
-				data.append((text_to_word_sequence(conv[0]),text_to_word_sequence(conv[1])))
-				conv.pop(0)
-			if 99 == idx % 100:
-				model = agent.train(data)
-				data = []
-				model.save('.models/chatbot.h5')
-				print('{} of {}'.format(idx,df.shape[0]))
-		if len(data) > 0:
-			model = agent.train(data)
-			data = []
-			model.save('.models/chatbot.h5')
-			print('{} of {}'.format(idx,df.shape[0]))
+			client_text = text_to_word_sequence(row['client'])
+			agent_text = text_to_word_sequence(row['agent'])
+			tokens = tokens + client_text + agent_text
+			data.append((client_text,agent_text))
+
+		tokens = list(set(tokens))
+
+		agent = Seq2Seq((tokens,tokens),epochs=50,internal_size=250)
+		model = agent.train(data)
+		data = []
+		model.save('.models/chatbot.h5')
+
+		with open('.models/chatbot_token.pkl','wb') as file:
+			pickle.dump(tokens, file)
+
 
 	elif 'play' == sys.argv[1]:
+		with open('.models/chatbot_token.pkl','rb') as file:
+			tokens = pickle.load(file)
 		agent = Seq2Seq((tokens,tokens), model_filename='.models/chatbot.h5')
 
 
