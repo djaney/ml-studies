@@ -8,7 +8,7 @@ from keras.utils.np_utils import to_categorical
 
 class Seq2Seq:
 	
-	def __init__(self, model_filename=None, epochs=100, encode_sequence_size=10, decode_sequence_size=10, data=None, tokens=None):
+	def __init__(self,tokens,model_filename=None, epochs=100, encode_sequence_size=10, decode_sequence_size=10):
 
 
 		self.PAD = 0
@@ -26,11 +26,6 @@ class Seq2Seq:
 		self.dec_token_map = []
 		self.enc_token_size = 0
 		self.dec_token_size = 0
-
-		if data == None:
-			self.training_data = self.load_data()
-		else:
-			self.training_data = data
 
 		
 		self.load_tokens(tokens)
@@ -56,6 +51,9 @@ class Seq2Seq:
 		y = []
 		z = []
 
+		# remove if not in vocabulary
+		inp = list(set(inp) & set(self.enc_tokens))
+		out = list(set(out) & set(self.dec_tokens))
 		enc = [self.enc_val_to_idx(i) for i in inp]
 		end_target = [self.dec_val_to_idx(i) for i in out]
 		end_target.insert(0, self.PAD)
@@ -84,12 +82,6 @@ class Seq2Seq:
 		if(tokens != None):
 			self.enc_tokens = tokens[0]
 			self.dec_tokens = tokens[1]
-		else:	
-			for d in self.training_data:
-				self.enc_tokens = self.enc_tokens + d[0]
-				self.dec_tokens = self.dec_tokens + d[1]
-				self.enc_tokens = list(set(self.enc_tokens))
-				self.dec_tokens = list(set(self.dec_tokens))
 
 		#map
 		self.enc_token_map = dict((c, i) for i, c in enumerate(self.enc_tokens))
@@ -97,8 +89,7 @@ class Seq2Seq:
 		self.enc_token_size = len(self.enc_tokens) + 1
 		self.dec_token_size = len(self.dec_tokens) + 2 # add 2 for pad and end
 
-	def data_all(self):
-		data = self.training_data
+	def data_all(self, data):
 		x, y, z = self.data_batch(data[0][0],data[0][1])
 		for d in data[1:]:
 			_x, _y, _z = self.data_batch(d[0],d[1])
@@ -107,9 +98,9 @@ class Seq2Seq:
 			z = np.concatenate((z,_z), axis=0)
 		return x, y, z
 
-	def train(self):
+	def train(self, data):
 
-		x,y,z = self.data_all()
+		x,y,z = self.data_all(data)
 		self.model.fit([x, y], z, epochs=self.EPOCHS)
 		return self.model
 
@@ -140,6 +131,7 @@ class Seq2Seq:
 	def evaluate(self, inp):
 		out = []
 		unknown = []
+		inp = list(set(inp) & set(self.enc_tokens))
 		enc = [self.enc_val_to_idx(i) for i in inp if i in self.enc_tokens]
 		for i in inp:
 			if i in self.enc_tokens:
