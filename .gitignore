@@ -12,3 +12,5 @@ __pycache__/
 
 /.trials/*
 !/.trials/.gitkeep
+/.graphs/*
+!/.graphs/.gitkeep

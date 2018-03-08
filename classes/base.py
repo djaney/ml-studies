@@ -100,8 +100,7 @@ class Seq2Seq:
 	def train(self, data):
 
 		x,y,z = self.data_all(data)
-		self.model.fit([x, y], z, epochs=self.EPOCHS,shuffle=False)
-		return self.model
+		return self.model.fit([x, y], z, epochs=self.EPOCHS,shuffle=False,validation_data=([x, y], z))
 
 	def create_model(self):
 		# Define an input sequence and process it.
@@ -127,7 +126,7 @@ class Seq2Seq:
 		self.model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 		self.model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])		
 
-	def evaluate(self, inp):
+	def predict(self, inp):
 		out = []
 		unknown = []
 		inp = list(set(inp) & set(self.enc_tokens))
