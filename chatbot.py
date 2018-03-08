@@ -8,7 +8,7 @@ from keras.utils import plot_model
 
 def main():
 	if 'train' == sys.argv[1]:
-		train()
+		model, history = train()
 		if len(sys.argv) == 3 and sys.argv[2] == 'plot':
 			print('Plotting chart')
 			plot_model(model, to_file='.graphs/chatbot.png')
@@ -45,7 +45,7 @@ def train():
 
 	tokens = list(set(tokens))
 
-	agent = Seq2Seq((tokens,tokens),internal_size=128,epochs=100)
+	agent = Seq2Seq((tokens,tokens),internal_size=256,epochs=200)
 	history = agent.train(data)
 	model = agent.model
 	data = []
@@ -78,7 +78,7 @@ def train():
 		else:
 			print('<Bot>: Sorry, I don\'t know ' + inp)
 
-	return history
+	return (model, history)
 
 
 def plot(history):
