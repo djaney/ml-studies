@@ -45,7 +45,7 @@ def train():
 
 	tokens = list(set(tokens))
 
-	agent = Seq2Seq((tokens,tokens),internal_size=256,epochs=200)
+	agent = Seq2Seq((tokens,tokens),internal_size=256,epochs=125)
 	history = agent.train(data)
 	model = agent.model
 	data = []

@@ -105,7 +105,7 @@ class Seq2Seq:
 	def create_model(self):
 		# Define an input sequence and process it.
 		encoder_inputs = Input(shape=(None, self.enc_token_size))
-		encoder = LSTM(self.internal_size, return_state=True)
+		encoder = LSTM(self.internal_size, return_state=True, dropout=0.01)
 		encoder_outputs, state_h, state_c = encoder(encoder_inputs)
 		# We discard `encoder_outputs` and only keep the states.
 		encoder_states = [state_h, state_c]
@@ -115,7 +115,7 @@ class Seq2Seq:
 		# We set up our decoder to return full output sequences,
 		# and to return internal states as well. We don't use the 
 		# return states in the training model, but we will use them in inference.
-		decoder_lstm = LSTM(self.internal_size, return_sequences=False, return_state=True)
+		decoder_lstm = LSTM(self.internal_size, return_sequences=False, return_state=True, dropout=0.01)
 		decoder_outputs, _, _ = decoder_lstm(decoder_inputs,
 		                                     initial_state=encoder_states)
 		decoder_dense = Dense(self.dec_token_size, activation='softmax')
