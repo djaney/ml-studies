@@ -100,7 +100,7 @@ class Seq2Seq:
 	def train(self, data):
 
 		x,y,z = self.data_all(data)
-		return self.model.fit([x, y], z, epochs=self.EPOCHS,shuffle=False,validation_data=([x, y], z))
+		return self.model.fit([x, y], z, epochs=self.EPOCHS,shuffle=False)
 
 	def create_model(self):
 		# Define an input sequence and process it.
@@ -160,3 +160,5 @@ class Seq2Seq:
 			out.append(self.dec_idx_to_val(pred_class))
 
 		return out, unknown
+	def load_weights(self, weights_file):
+		self.model.load_weights(weights_file)
