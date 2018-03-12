@@ -23,8 +23,8 @@ def play():
 
 	agent = Seq2Seq((tokens,tokens),internal_size=256,epochs=1)
 	agent.load_weights('.models/chatbot.weights.h5')
-	out, unk = agent.predict([])
-	print('<Bot>: '+' '.join(out))
+	# out, unk = agent.predict([])
+	# print('<Bot>: '+' '.join(out))
 	while True:
 		inp = input('<You>: ')
 		out, unk = agent.predict(text_to_word_sequence(inp))
